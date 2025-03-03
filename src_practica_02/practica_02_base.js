@@ -116,7 +116,7 @@ function generateIcosahedronSphere(subdivisions) {
                 (vertices[a][0] + vertices[b][0]) / 2,
                 (vertices[a][1] + vertices[b][1]) / 2,
                 (vertices[a][2] + vertices[b][2]) / 2,
-                1.0  // Asegura que el vértice es un vec4
+                1.0
             ]);
 
             let index = vertices.length;
@@ -144,12 +144,12 @@ function generateIcosahedronSphere(subdivisions) {
     for (let tri of indices) {
         for (let idx of tri) {
             let v = vertices[idx];
-            pointsArray.push(...v);  // Aquí agregamos `vec4`
+            pointsArray.push(...v);
 
-			let greenValue = Math.random();
-			let redValue = 0.9;
+			let greenValue = Math.random()*0.6+0.2;
+			let redValue = 1.0;
 			let blueValue = 0.0;
-			colorsArray.push(redValue, greenValue, blueValue, 1.0);  // Generar color en formato RGBA
+			colorsArray.push(redValue, greenValue, blueValue, 1.0);
 			
         }
     }
@@ -164,13 +164,12 @@ function sphere_color() {
 // Normalización de vectores
 function normalize_new(v) {
     let len = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
-    return [v[0] / len, v[1] / len, v[2] / len, 1.0];  // Normalizamos a `vec4` (x, y, z, w)
+    return [v[0] / len, v[1] / len, v[2] / len, 1.0];
 }
 
-// Generar esfera con 3 subdivisiones (más alto → más detallado)
+// Generar esfera con 3 subdivisiones (más alto -> más detallado)
 const { pointsArray, colorsArray } = generateIcosahedronSphere(3);
 
-// Añadir el objeto a WebGL
 spheresToDraw.push({
     programInfo: programInfo,
     pointsArray: pointsArray,
@@ -553,13 +552,13 @@ window.onload = function init() {
  */
 function nuevo_eje_movimiento(){
 	// Calcular matriz de rotacion del eje X 
-	let matriz_rot_X = rotate(yaw, ejeY);
-	eje_X_rotado_yaw = mult(matriz_rot_X, 
+	let matriz_rot = rotate(yaw, ejeY);
+	eje_X_rotado_yaw = mult(matriz_rot, 
 			vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-	eje_Z_rotado_yaw = mult(matriz_rot_X, 
-		vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
-	eje_Y_rotado_yaw = mult(matriz_rot_X, 
+	eje_Y_rotado_yaw = mult(matriz_rot, 
 		vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
+	eje_Z_rotado_yaw = mult(matriz_rot, 
+		vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
 }
 
 function render() {
