@@ -362,38 +362,73 @@ var forward = vec3(0.0,0.0,-1.0)
  * y ajusta el objetivo (target) en función de la posición actual (eye).
  */
 function update_camera_direction() {
-	// Conversion de pitch y yaw a radianes
-	let radPitch = -pitch * (Math.PI / 180.0);
-	let radYaw = -yaw * (Math.PI / 180.0);
-	let radRoll = roll * (Math.PI / 180.0);
-	
-	// Calculo trigonometrico de la nueva direccion a apuntar
-	let dirX = Math.cos(radYaw) * Math.cos(radPitch);
-	let dirY = Math.sin(radPitch);
-	let dirZ = Math.sin(radYaw) * Math.cos(radPitch);
+    // Conversión de pitch, yaw y roll a radianes
+    let radPitch = -pitch * (Math.PI / 180.0);
+    let radYaw = yaw * (Math.PI / 180.0);  // Invertir yaw para el movimiento correcto a la derecha
+    let radRoll = roll * (Math.PI / 180.0);
 
-	// Normalizacion de la direccion
-	forward = normalize(vec3(dirX, dirY, dirZ));
+    // Matrices de rotación individuales
+    let rotationYaw = mat4(
+        Math.cos(radYaw), 0, Math.sin(radYaw), 0,
+        0, 1, 0, 0,
+        -Math.sin(radYaw), 0, Math.cos(radYaw), 0,
+        0, 0, 0, 1
+    );
 
-	// Matriz de rotación para roll (rotación alrededor del eje Z)
-	let rollMatrix = mat3(
-		Math.cos(radRoll), -Math.sin(radRoll), 0,
-		Math.sin(radRoll), Math.cos(radRoll), 0,
-		0, 0, 1
-	);
+    let rotationPitch = mat4(
+        1, 0, 0, 0,
+        0, Math.cos(radPitch), -Math.sin(radPitch), 0,
+        0, Math.sin(radPitch), Math.cos(radPitch), 0,
+        0, 0, 0, 1
+    );
 
-	// Aplicar la rotación de roll a la dirección
-	forward = mult(rollMatrix, forward);
+    let rotationRoll = mat4(
+        Math.cos(radRoll), -Math.sin(radRoll), 0, 0,
+        Math.sin(radRoll), Math.cos(radRoll), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    );
 
-	// Calcular el vector "derecha" (right) perpendicular a la dirección
-    right = normalize(cross(ejeY, forward)); // Cruza la dirección con el vector "arriba" (0,1,0)
+    // Combinación de las matrices de rotación 4x4
+    let combinedRotation = mult(rotationYaw, rotationPitch);  // Primero Yaw y Pitch
+    combinedRotation = mult(combinedRotation, rotationRoll);  // Luego Roll
 
-    // Calculo del up como el producto cruzado entre derecha y dirección
+    // Dirección inicial (mirando hacia el frente, eje Z)
+    forward = vec3(0, 0, -1);  // Apunta hacia el eje Z negativo
+
+    // Aplicar la rotación combinada a la dirección (con una matriz 4x4)
+    forward = mult(combinedRotation, vec4(forward[0], forward[1], forward[2], 1));
+
+    // Normalizar el vector resultante para asegurarse de que tenga una magnitud de 1
+    forward = normalize(vec3(forward[0], forward[1], forward[2]));
+
+    // Calcular el vector "derecha" (right) perpendicular a la dirección
+    right = normalize(cross(vec3(0, 1, 0), forward)); // Cruza la dirección con el vector "arriba" (0,1,0)
+
+    // Calcular el vector "arriba" (up) como el producto cruzado entre derecha y dirección
     up = normalize(cross(right, forward));
 
-	// Calculo del target dada la posicion y la direccion
-	target = add(eye, forward);
+    // Cálculo del target dada la posición y la dirección
+    target = add(eye, forward);
+
+    // Opcional: devolver o usar los vectores derecha y arriba según sea necesario
 }
+
+
+function mult_mat3(u, v){
+	let result = mat3();
+	result[0] = v[0]*u[0]+v[1]*u[3]+v[2]*u[6];
+	result[1] = v[0]*u[1]+v[1]*u[4]+v[2]*u[7];
+	result[2] = v[0]*u[2]+v[1]*u[5]+v[2]*u[8];
+	result[3] = v[3]*u[0]+v[4]*u[3]+v[5]*u[6];
+	result[4] = v[3]*u[1]+v[4]*u[4]+v[5]*u[7];
+	result[5] = v[3]*u[2]+v[4]*u[5]+v[5]*u[8];
+	result[6] = v[6]*u[0]+v[7]*u[3]+v[8]*u[6];
+	result[7] = v[6]*u[1]+v[7]*u[4]+v[8]*u[7];
+	result[8] = v[6]*u[2]+v[7]*u[5]+v[8]*u[8];
+	return result
+}
+
 
 var eje_X_rotado = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
 var eje_Y_rotado = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
@@ -534,7 +569,7 @@ const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
 let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
-let yaw = 90.0;        // Ángulo de yaw (rotacion sobre eje Y)
+let yaw = 0.0;        // Ángulo de yaw (rotacion sobre eje Y)
 let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
