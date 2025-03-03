@@ -155,45 +155,6 @@ var programInfo = {
 var objectsToDraw = [
 ];
 
-function createSphere(radius, latBands, longBands) {
-    let vertices = [];
-    let normals = [];
-    let indices = [];
-
-    for (let lat = 0; lat <= latBands; lat++) {
-        let theta = (lat * Math.PI) / latBands;
-        let sinTheta = Math.sin(theta);
-        let cosTheta = Math.cos(theta);
-
-        for (let long = 0; long <= longBands; long++) {
-            let phi = (long * 2 * Math.PI) / longBands;
-            let sinPhi = Math.sin(phi);
-            let cosPhi = Math.cos(phi);
-
-            let x = cosPhi * sinTheta;
-            let y = cosTheta;
-            let z = sinPhi * sinTheta;
-
-            vertices.push(radius * x, radius * y, radius * z);
-            normals.push(x, y, z);
-        }
-    }
-
-    for (let lat = 0; lat < latBands; lat++) {
-        for (let long = 0; long < longBands; long++) {
-            let first = lat * (longBands + 1) + long;
-            let second = first + longBands + 1;
-            
-            indices.push(first, second, first + 1);
-            indices.push(second, second + 1, first + 1);
-        }
-    }
-
-    return { vertices, normals, indices };
-}
-
-let sphereData = createSphere(1.0, 32, 32);
-
 objectsToDraw.push(
 	{
 		programInfo: programInfo,
@@ -210,6 +171,62 @@ objectsToDraw.push(
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);
+
+const pointsSphere = [];
+const colorsSphere = [];
+const indicesSphere = [];
+
+const radius = 1.0;
+const latBands = 16;  // Cantidad de divisiones en latitud
+const longBands = 16; // Cantidad de divisiones en longitud
+
+for (let lat = 0; lat <= latBands; lat++) {
+    let theta = (lat * Math.PI) / latBands; // De 0 a π
+    let sinTheta = Math.sin(theta);
+    let cosTheta = Math.cos(theta);
+
+    for (let long = 0; long <= longBands; long++) {
+        let phi = (long * 2 * Math.PI) / longBands; // De 0 a 2π
+        let sinPhi = Math.sin(phi);
+        let cosPhi = Math.cos(phi);
+
+        let x = radius * cosPhi * sinTheta;
+        let y = radius * cosTheta;
+        let z = radius * sinPhi * sinTheta;
+
+        pointsSphere.push([x, y, z, 1.0]);
+
+        // Generar colores en degradado
+        let r = (x + 1) / 2;
+        let g = (y + 1) / 2;
+        let b = (z + 1) / 2;
+        colorsSphere.push([r, g, b, 1.0]);
+    }
+}
+
+// Generar los triángulos
+for (let lat = 0; lat < latBands; lat++) {
+    for (let long = 0; long < longBands; long++) {
+        let first = lat * (longBands + 1) + long;
+        let second = first + longBands + 1;
+
+        indicesSphere.push(first, second, first + 1);
+        indicesSphere.push(second, second + 1, first + 1);
+    }
+}
+
+// Agregar la esfera a `objectsToDraw`
+objectsToDraw.push({
+    programInfo: programInfo,
+    pointsArray: pointsSphere,
+    colorsArray: colorsSphere,
+    uniforms: {
+        u_colorMult: [1.0, 1.0, 1.0, 1.0],
+        u_model: new mat4(),
+    },
+    primType: "triangles", // Usa "triangles" para una esfera rellena
+});
+
 
 //------------------------------------------------------------------------------
 // Movimiento de la camara
@@ -426,7 +443,7 @@ document.addEventListener("mousemove", (event) => {
 function update_camera_direction() {
 	// Comprobar que pitch y yaw no superan los valores extremo
 	pitch = Math.max(-89, Math.min(89, pitch)); 
-	yaw = Math.max(-89, Math.min(89, yaw));
+	//yaw = Math.max(-89, Math.min(89, yaw));
 
 	// Conversion de pitch y yaw a radianes
 	let radPitch = pitch * (Math.PI / 180.0);
@@ -593,12 +610,6 @@ function render() {
     });	
     
 	rotAngle += rotChange;
-	for (let i=0; i < MAX_CUBOS; i++) {
-		cubos[i].posRotOrbita += cubos[i].velRotOrbita
-		cubos[i].posRotXMismo += cubos[i].velRotXMismo
-		cubos[i].posRotYMismo += cubos[i].velRotYMismo
-		cubos[i].posRotZMismo += cubos[i].velRotZMismo
-	}
 	requestAnimationFrame(render);
 	
 }
