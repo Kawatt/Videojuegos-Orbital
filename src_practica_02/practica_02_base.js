@@ -354,6 +354,8 @@ function keyReleasedHandler(event) {
 
 // Movimiento y rotación
 
+var right = vec3(1.0,0.0,0.0)
+var forward = vec3(0.0,0.0,-1.0)
 /**
  * Actualiza la dirección de la cámara según los ángulos de pitch y yaw.
  * Limita los valores extremos, convierte a radianes, calcula la nueva dirección
@@ -361,8 +363,8 @@ function keyReleasedHandler(event) {
  */
 function update_camera_direction() {
 	// Conversion de pitch y yaw a radianes
-	let radPitch = pitch * (Math.PI / 180.0);
-	let radYaw = yaw * (Math.PI / 180.0);
+	let radPitch = -pitch * (Math.PI / 180.0);
+	let radYaw = -yaw * (Math.PI / 180.0);
 	let radRoll = roll * (Math.PI / 180.0);
 	
 	// Calculo trigonometrico de la nueva direccion a apuntar
@@ -428,52 +430,52 @@ function nuevo_eje_movimiento() {
 function mover_camara() {
 	//console.log(up);
 	if (teclas_pulsadas.delante == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
-        target[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
-        target[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
-		eye[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
-        target[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
+        eye[0] += VEL_MOVIMIENTO * forward[0];
+        target[0] += VEL_MOVIMIENTO * forward[0];
+        eye[1] += VEL_MOVIMIENTO * forward[1];
+        target[1] += VEL_MOVIMIENTO * forward[1];
+		eye[2] += VEL_MOVIMIENTO * forward[2];
+        target[2] += VEL_MOVIMIENTO * forward[2];
     }
     if (teclas_pulsadas.atras == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
-        target[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
-        target[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
-        target[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
+        eye[0] -= VEL_MOVIMIENTO * forward[0];
+        target[0] -= VEL_MOVIMIENTO * forward[0];
+        eye[1] -= VEL_MOVIMIENTO * forward[1];
+        target[1] -= VEL_MOVIMIENTO * forward[1];
+		eye[2] -= VEL_MOVIMIENTO * forward[2];
+        target[2] -= VEL_MOVIMIENTO * forward[2];
     }
 	if (teclas_pulsadas.arriba == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
-        target[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
-        target[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
-		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
-        target[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
+        eye[0] += VEL_MOVIMIENTO * up[0];
+        target[0] += VEL_MOVIMIENTO * up[0];
+        eye[1] += VEL_MOVIMIENTO * up[1];
+        target[1] += VEL_MOVIMIENTO * up[1];
+		eye[2] += VEL_MOVIMIENTO * up[2];
+        target[2] += VEL_MOVIMIENTO * up[2];
     }
     if (teclas_pulsadas.abajo == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
-        target[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
-        target[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
-        target[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
+        eye[0] -= VEL_MOVIMIENTO * up[0];
+        target[0] -= VEL_MOVIMIENTO * up[0];
+        eye[1] -= VEL_MOVIMIENTO * up[1];
+        target[1] -= VEL_MOVIMIENTO * up[1];
+		eye[2] -= VEL_MOVIMIENTO * up[2];
+        target[2] -= VEL_MOVIMIENTO * up[2];
     }
     if (teclas_pulsadas.derecha == 1) {
-		eye[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
-        target[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
-        target[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
-        eye[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
-        target[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
+		eye[0] += VEL_MOVIMIENTO * right[0];
+        target[0] += VEL_MOVIMIENTO * right[0];
+        eye[1] += VEL_MOVIMIENTO * right[1];
+        target[1] += VEL_MOVIMIENTO * right[1];
+        eye[2] += VEL_MOVIMIENTO * right[2];
+        target[2] += VEL_MOVIMIENTO * right[2];
     }
     if (teclas_pulsadas.izquierda == 1) {
-		eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
-        target[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1];
-        target[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1]; 
-        eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2];
-        target[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2]; 
+		eye[0] -= VEL_MOVIMIENTO * right[0];
+        target[0] -= VEL_MOVIMIENTO * right[0];
+        eye[1] -= VEL_MOVIMIENTO * right[1];
+        target[1] -= VEL_MOVIMIENTO * right[1]; 
+        eye[2] -= VEL_MOVIMIENTO * right[2];
+        target[2] -= VEL_MOVIMIENTO * right[2]; 
     }
 
 	//aplicar_roll()
@@ -532,7 +534,7 @@ const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
 let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
-let yaw = -90.0;        // Ángulo de yaw (rotacion sobre eje Y)
+let yaw = 90.0;        // Ángulo de yaw (rotacion sobre eje Y)
 let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
@@ -583,44 +585,11 @@ document.addEventListener("mousemove", (event) => {
     }
 });
 
-//------------------------------------------------------------------------------
-// Proyecciones de la camara
-//------------------------------------------------------------------------------
-
-var canvas;
-
-/**
- * Configura la proyección ortogonal.
- * Define una vista ortogonal basada en un tamaño fijo y la relación de aspecto
- * del canvas.
- * Luego, actualiza las matrices de proyección y vista en los shaders.
- */
-function proy_orto() {
-	let tam_vista = 10;  // Tamaño de la vista ortogonal
-	let aspecto = canvas.width / canvas.height;  // Relación de aspecto
-
-	projection = ortho(-tam_vista * aspecto, tam_vista * aspecto, -tam_vista, tam_vista, 0.1, 100.0);
-
-	gl.uniformMatrix4fv(programInfo.uniformLocations.projection, gl.FALSE, projection);
-	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
-}
-
-/**
- * Configura la proyección en perspectiva.
- * Establece una proyección de perspectiva con el campo de visión actual y
- * la relación de aspecto.
- * Luego, actualiza las matrices de proyección y vista en los shaders.
- */
-function proy_perspectiva() {
-	projection = perspective(field, canvas.width/canvas.height, 0.1, 100.0 );
-
-	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
-	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
-}
-
 //----------------------------------------------------------------------------
 // Initialization function
 //----------------------------------------------------------------------------
+
+var canvas;
 
 window.onload = function init() {
 	
@@ -668,7 +637,10 @@ window.onload = function init() {
 	view = lookAt(eye,target,up);
 
 	// Establecer la proyeccion perspectiva por defecto
-	proy_perspectiva();
+	projection = perspective(field, canvas.width/canvas.height, 0.1, 100.0 );
+
+	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
+	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 	
 	requestAnimFrame(render);
 
