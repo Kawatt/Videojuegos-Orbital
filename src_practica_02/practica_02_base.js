@@ -172,60 +172,100 @@ const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);
 
-const pointsSphere = [];
-const colorsSphere = [];
-const indicesSphere = [];
+function generateIcosahedronSphere(subdivisions) {
+    const t = (1.0 + Math.sqrt(5.0)) / 2.0;
 
-const radius = 1.0;
-const latBands = 16;  // Cantidad de divisiones en latitud
-const longBands = 16; // Cantidad de divisiones en longitud
+    // Vértices iniciales del icosaedro, ahora con w = 1.0 para cada vértice
+    let vertices = [
+        [-1, t, 0, 1.0], [1, t, 0, 1.0], [-1, -t, 0, 1.0], [1, -t, 0, 1.0],
+        [0, -1, t, 1.0], [0, 1, t, 1.0], [0, -1, -t, 1.0], [0, 1, -t, 1.0],
+        [t, 0, -1, 1.0], [t, 0, 1, 1.0], [-t, 0, -1, 1.0], [-t, 0, 1, 1.0],
+    ];
 
-for (let lat = 0; lat <= latBands; lat++) {
-    let theta = (lat * Math.PI) / latBands; // De 0 a π
-    let sinTheta = Math.sin(theta);
-    let cosTheta = Math.cos(theta);
+    // Normalizar los vértices
+    vertices = vertices.map(v => normalize_new(v));
 
-    for (let long = 0; long <= longBands; long++) {
-        let phi = (long * 2 * Math.PI) / longBands; // De 0 a 2π
-        let sinPhi = Math.sin(phi);
-        let cosPhi = Math.cos(phi);
+    // Triángulos del icosaedro
+    let indices = [
+        [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
+        [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
+        [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
+        [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1],
+    ];
 
-        let x = radius * cosPhi * sinTheta;
-        let y = radius * cosTheta;
-        let z = radius * sinPhi * sinTheta;
+    // Subdivisión de triángulos
+    for (let i = 0; i < subdivisions; i++) {
+        let newIndices = [];
+        let midPointCache = {};
 
-        pointsSphere.push([x, y, z, 1.0]);
+        function getMidPoint(a, b) {
+            let key = a < b ? `${a}-${b}` : `${b}-${a}`;
+            if (midPointCache[key] !== undefined) {
+                return midPointCache[key];
+            }
 
-        // Generar colores en degradado
-        let r = (x + 1) / 2;
-        let g = (y + 1) / 2;
-        let b = (z + 1) / 2;
-        colorsSphere.push([r, g, b, 1.0]);
+            let mid = normalize_new([
+                (vertices[a][0] + vertices[b][0]) / 2,
+                (vertices[a][1] + vertices[b][1]) / 2,
+                (vertices[a][2] + vertices[b][2]) / 2,
+                1.0  // Asegura que el vértice es un vec4
+            ]);
+
+            let index = vertices.length;
+            vertices.push(mid);
+            midPointCache[key] = index;
+            return index;
+        }
+
+        for (let tri of indices) {
+            let a = tri[0], b = tri[1], c = tri[2];
+            let ab = getMidPoint(a, b);
+            let bc = getMidPoint(b, c);
+            let ca = getMidPoint(c, a);
+
+            newIndices.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
+        }
+
+        indices = newIndices;
     }
+
+    // Convertir los datos a buffers planos
+    let pointsArray = [];
+    let colorsArray = [];
+
+    for (let tri of indices) {
+        for (let idx of tri) {
+            let v = vertices[idx];
+            pointsArray.push(...v);  // Aquí agregamos `vec4`
+            colorsArray.push(Math.random(), Math.random(), Math.random(), 1.0); // Colores aleatorios
+        }
+    }
+
+    return { pointsArray, colorsArray };
 }
 
-// Generar los triángulos
-for (let lat = 0; lat < latBands; lat++) {
-    for (let long = 0; long < longBands; long++) {
-        let first = lat * (longBands + 1) + long;
-        let second = first + longBands + 1;
-
-        indicesSphere.push(first, second, first + 1);
-        indicesSphere.push(second, second + 1, first + 1);
-    }
+// Normalización de vectores
+function normalize_new(v) {
+    let len = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
+    return [v[0] / len, v[1] / len, v[2] / len, 1.0];  // Normalizamos a `vec4` (x, y, z, w)
 }
 
-// Agregar la esfera a `objectsToDraw`
+// Generar esfera con 3 subdivisiones (más alto → más detallado)
+const { pointsArray, colorsArray } = generateIcosahedronSphere(3);
+
+// Añadir el objeto a WebGL
 objectsToDraw.push({
     programInfo: programInfo,
-    pointsArray: pointsSphere,
-    colorsArray: colorsSphere,
+    pointsArray: pointsArray,
+    colorsArray: colorsArray,
     uniforms: {
         u_colorMult: [1.0, 1.0, 1.0, 1.0],
         u_model: new mat4(),
     },
-    primType: "triangles", // Usa "triangles" para una esfera rellena
+    primType: "triangles",
 });
+
+
 
 
 //------------------------------------------------------------------------------
@@ -606,7 +646,7 @@ function render() {
 		setUniforms(object.programInfo, object.uniforms);
 
 		// Draw
-		gl.drawArrays(object.primitive, 0, object.pointsArray.length);
+		gl.drawArrays(object.primitive, 0, object.pointsArray.length / 4);
     });	
     
 	rotAngle += rotChange;
