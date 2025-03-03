@@ -247,10 +247,6 @@ generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX);
 
 var es_perspectiva = true; 	// Variable para determinar la vista activa
 var field = 45.0;			// Variable campo de vista
-var eje_X_rotado_yaw = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
-var eje_Z_rotado_yaw = vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0);
-var eje_Y_rotado_yaw = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
-
 
 // 1 si esta siendo pulsada, 0 si ha sido soltada
 var teclas_pulsadas = {
@@ -356,62 +352,175 @@ function keyReleasedHandler(event) {
 	}
 }
 
+// Movimiento y rotación
+
+/**
+ * Actualiza la dirección de la cámara según los ángulos de pitch y yaw.
+ * Limita los valores extremos, convierte a radianes, calcula la nueva dirección
+ * y ajusta el objetivo (target) en función de la posición actual (eye).
+ */
+function update_camera_direction() {
+	// Conversion de pitch y yaw a radianes
+	let radPitch = pitch * (Math.PI / 180.0);
+	let radYaw = yaw * (Math.PI / 180.0);
+	let radRoll = roll * (Math.PI / 180.0);
+	
+	// Calculo trigonometrico de la nueva direccion a apuntar
+	let dirX = Math.cos(radYaw) * Math.cos(radPitch);
+	let dirY = Math.sin(radPitch);
+	let dirZ = Math.sin(radYaw) * Math.cos(radPitch);
+
+	// Normalizacion de la direccion
+	forward = normalize(vec3(dirX, dirY, dirZ));
+
+	// Matriz de rotación para roll (rotación alrededor del eje Z)
+	let rollMatrix = mat3(
+		Math.cos(radRoll), -Math.sin(radRoll), 0,
+		Math.sin(radRoll), Math.cos(radRoll), 0,
+		0, 0, 1
+	);
+
+	// Aplicar la rotación de roll a la dirección
+	forward = mult(rollMatrix, forward);
+
+	// Calcular el vector "derecha" (right) perpendicular a la dirección
+    right = normalize(cross(ejeY, forward)); // Cruza la dirección con el vector "arriba" (0,1,0)
+
+    // Calculo del up como el producto cruzado entre derecha y dirección
+    up = normalize(cross(right, forward));
+
+	// Calculo del target dada la posicion y la direccion
+	target = add(eye, forward);
+}
+
+var eje_X_rotado = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
+var eje_Y_rotado = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
+var eje_Z_rotado = vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0);
+
+/**
+ * Calcula las componentes a tener en cuenta en el movimiento dado el yaw
+ */
+function nuevo_eje_movimiento() {
+    // Calcular matriz de rotacion del eje X 
+    //let matriz_rot_yaw = rotate(yaw, ejeY);
+    //eje_X_rotado = mult(matriz_rot_yaw, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
+    //eje_Z_rotado = mult(matriz_rot_yaw, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
+    
+    // Calcular matriz de rotación del pitch (vertical) sobre el eje X rotado
+    //let matriz_rot_pitch = rotate(pitch, vec3(eje_X_rotado[0], eje_X_rotado[1], eje_X_rotado[2]));
+    //eje_Y_rotado = mult(matriz_rot_pitch, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
+
+	let matriz_rot_yaw = rotate(yaw, ejeY);
+    let matriz_rot_pitch = rotate(pitch, ejeZ);
+    
+    let matriz_rot = mult(matriz_rot_yaw, matriz_rot_pitch);
+    
+    eje_X_rotado = mult(matriz_rot, vec4(ejeX[0], -ejeX[1], ejeX[2], 0.0));
+    eje_Y_rotado = mult(matriz_rot, vec4(ejeY[0], -ejeY[1], ejeY[2], 0.0));
+    eje_Z_rotado = mult(matriz_rot, vec4(ejeZ[0], -ejeZ[1], ejeZ[2], 0.0));
+}
+
 /**
  * Mueve la cámara en función de las teclas presionadas.
  * Modifica la posición de la cámara (eye) y el objetivo (target)
  * según la dirección de movimiento y la velocidad definida.
  */
 function mover_camara() {
+	//console.log(up);
 	if (teclas_pulsadas.delante == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
-        target[0] += VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
-        eye[1] += VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
-        target[1] += VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
-		eye[2] += VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
-        target[2] += VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
+        eye[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
+        target[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
+        target[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
+		eye[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
+        target[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
     }
     if (teclas_pulsadas.atras == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
-        target[0] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
-        target[1] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
-        target[2] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
+        eye[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
+        target[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
+        target[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
+		eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
+        target[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
     }
 	if (teclas_pulsadas.arriba == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
-        target[0] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
-        target[1] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
-		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
-        target[2] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
+        target[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
+        target[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
+		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
+        target[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
     }
     if (teclas_pulsadas.abajo == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
-        target[0] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
-        target[1] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
-        target[2] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
+        target[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
+        target[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
+		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
+        target[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
     }
     if (teclas_pulsadas.derecha == 1) {
-		eye[0] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
-        target[0] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
-        target[1] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
-        eye[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
-        target[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
+		eye[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
+        target[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
+        target[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
+        eye[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
+        target[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
     }
     if (teclas_pulsadas.izquierda == 1) {
-		eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
-        target[0] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
-        target[1] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[1]; 
-        eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
-        target[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2]; 
-		
+		eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
+        target[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1];
+        target[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1]; 
+        eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2];
+        target[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2]; 
+    }
+
+	//aplicar_roll()
+}
+
+function aplicar_roll() {
+    let angulo_roll = 2.0; // Ángulo en grados por cada pulsación
+    if (teclas_pulsadas.girder == 1) {
+		let eje = vec3(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2])
+        let matriz_roll = rotate(-angulo_roll, eje);
+		let aux = mult(matriz_roll, vec4(up[0], up[1], up[2], 0.0));
+        up = vec3(aux[0], aux[1], aux[2])
+    }
+    if (teclas_pulsadas.girizq == 1) {
+		let eje = vec3(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2])
+        let matriz_roll = rotate(angulo_roll, eje);
+		let aux = mult(matriz_roll, vec4(up[0], up[1], up[2], 0.0));
+        up = vec3(aux[0], aux[1], aux[2])
     }
 }
+
+// Variable para controlar el roll
+/*let roll = 0.0;
+const VEL_ROLL = 2.0; // Ajusta la velocidad de rotación
+
+let ejeX_rotado_roll = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
+let ejeY_rotado_roll = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
+
+function rotar_roll() {
+    let matriz_rot = rotate(roll, ejeZ); // Rotación sobre ejeZ
+
+    // Aplicar rotación sin modificar las constantes ejeX y ejeY
+    ejeX_rotado_roll = mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
+    ejeY_rotado_roll = mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
+	console.log(ejeX_rotado_roll)
+}
+
+function girar_camara() {
+    if (teclas_pulsadas.girder == 1) {
+        roll += VEL_ROLL;
+        rotar_roll();
+    }
+    if (teclas_pulsadas.girizq == 1) {
+        roll -= VEL_ROLL;
+        rotar_roll();
+    }
+}*/
 
 
 //------------------------------------------------------------------------------
@@ -422,8 +531,9 @@ const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor 
 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
-let pitch = 0.0;     // Ángulo de pitch (rotacion sobre eje X)
-let yaw = -90.0;       // Ángulo de yaw (rotacion sobre eje Y)
+let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
+let yaw = -90.0;        // Ángulo de yaw (rotacion sobre eje Y)
+let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
 /**
@@ -472,32 +582,6 @@ document.addEventListener("mousemove", (event) => {
         update_camera_direction();
     }
 });
-
-/**
- * Actualiza la dirección de la cámara según los ángulos de pitch y yaw.
- * Limita los valores extremos, convierte a radianes, calcula la nueva dirección
- * y ajusta el objetivo (target) en función de la posición actual (eye).
- */
-function update_camera_direction() {
-	// Comprobar que pitch y yaw no superan los valores extremo
-	//pitch = Math.max(-89, Math.min(89, pitch)); 
-	//yaw = Math.max(-89, Math.min(89, yaw));
-
-	// Conversion de pitch y yaw a radianes
-	let radPitch = pitch * (Math.PI / 180.0);
-	let radYaw = yaw * (Math.PI / 180.0);
-	
-	// Calculo trigonometrico de la nueva direccion a apuntar
-	let dirX = Math.cos(radYaw) * Math.cos(radPitch);
-	let dirY = Math.sin(radPitch);
-	let dirZ = Math.sin(radYaw) * Math.cos(radPitch);
-
-	// Normalizacion de la direccion
-	let direction = normalize(vec3(dirX, dirY, dirZ));
-
-	// Calculo del target dada la posicion y la direccion
-	target = add(eye, direction);
-}
 
 //------------------------------------------------------------------------------
 // Proyecciones de la camara
@@ -604,20 +688,6 @@ window.onload = function init() {
 // Rendering Event Function
 //----------------------------------------------------------------------------
 
-/**
- * Calcula las componentes a tener en cuenta en el movimiento dado el yaw
- */
-function nuevo_eje_movimiento(){
-	// Calcular matriz de rotacion del eje X 
-	let matriz_rot = rotate(yaw, ejeY);
-	eje_X_rotado_yaw = mult(matriz_rot, 
-			vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-	eje_Y_rotado_yaw = mult(matriz_rot, 
-		vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
-	eje_Z_rotado_yaw = mult(matriz_rot, 
-		vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
-}
-
 function render() {
 
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
@@ -628,6 +698,7 @@ function render() {
 
 	nuevo_eje_movimiento();
 	mover_camara();
+	//girar_camara();
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
