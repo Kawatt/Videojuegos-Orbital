@@ -175,7 +175,7 @@ const ejeZ = vec3(0.0, 0.0, 1.0);
 function generateIcosahedronSphere(subdivisions) {
     const t = (1.0 + Math.sqrt(5.0)) / 2.0;
 
-    // Vértices iniciales del icosaedro, ahora con w = 1.0 para cada vértice
+    // Vértices iniciales del icosaedro
     let vertices = [
         [-1, t, 0, 1.0], [1, t, 0, 1.0], [-1, -t, 0, 1.0], [1, -t, 0, 1.0],
         [0, -1, t, 1.0], [0, 1, t, 1.0], [0, -1, -t, 1.0], [0, 1, -t, 1.0],
@@ -237,11 +237,20 @@ function generateIcosahedronSphere(subdivisions) {
         for (let idx of tri) {
             let v = vertices[idx];
             pointsArray.push(...v);  // Aquí agregamos `vec4`
-            colorsArray.push(Math.random(), Math.random(), Math.random(), 1.0); // Colores aleatorios
+
+			let greenValue = Math.random();
+			let redValue = 0.9;
+			let blueValue = 0.0;
+			colorsArray.push(redValue, greenValue, blueValue, 1.0);  // Generar color en formato RGBA
+			
         }
     }
 
     return { pointsArray, colorsArray };
+}
+
+function sphere_color() {
+	return Math.max(Math.random(), 0.8);
 }
 
 // Normalización de vectores
