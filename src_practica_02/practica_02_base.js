@@ -181,7 +181,64 @@ spheresToDraw.push({
     primType: "triangles",
 });
 
+var planetas = [
+];
 
+// Ejes asegurando que ejeRot != ejeOrb, ejeRot != ejeInc
+// ejOrb: Eje sobre el que se desplaza el objeto para ponerlo en orbita
+// ejRot: Eje de rotacion la Orbita
+// ejInc: Eje que se va a rotar para obtener el eje de inclinacion
+function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc){
+
+	// Inclinacion de la orbita
+	let RInc = rotate(Math.random()*360, ejOrb);			
+	let ejeInclinacionRotado =
+		mult(RInc, vec4(ejInc[0], ejInc[1], ejInc[2], 0.0))
+	;
+
+	let M_Rot_Inclinacion = 
+		rotate(
+			Math.floor(Math.random()*180), // Inclinacion de la orbita
+			vec3(
+				ejeInclinacionRotado[0],
+				ejeInclinacionRotado[1],
+				ejeInclinacionRotado[2]
+			)
+		)
+	;
+
+	// Traslación
+	M_Tras_R_Orb = translate(
+		ejOrb[0] * radioOrbita,
+		ejOrb[1] * radioOrbita,
+		ejOrb[2] * radioOrbita
+	);
+
+	// Escalado de tamaño
+	let M_Escalado = scale(radioPlaneta, radioPlaneta, radioPlaneta);
+
+	planetas.push({
+		ejeOrbita: ejOrb,//ejOrb, // Eje sobre desplaza
+		ejeRotOrbita: ejRot,//ejRot, // Eje sobre el que se rota
+
+		velRotXMismo: velRotX, // Velocidad de rotacion sobre si mismo
+		velRotYMismo: velRotY,
+		velRotZMismo: velRotZ,
+		posRotXMismo: 0.0, // Rotacion actual sobre si mismo
+		posRotYMismo: 0.0,
+		posRotZMismo: 0.0,
+		
+		velRotOrbita: velOrbita, // Velocidad rotacion en la orbita
+		posRotOrbita: 0.0, // Rotacion actual en la orbita
+
+		Matriz_Inclinacion_Orbita: M_Rot_Inclinacion,
+		Matriz_Traslacion_R_Orbita: M_Tras_R_Orb,
+		Matriz_Escalado: M_Escalado
+	});
+}
+
+//radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc
+generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX);
 
 
 //------------------------------------------------------------------------------
@@ -365,8 +422,8 @@ const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor 
 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
-let pitch = -24.00;     // Ángulo de pitch (rotacion sobre eje X)
-let yaw = -63.50;       // Ángulo de yaw (rotacion sobre eje Y)
+let pitch = 0.0;     // Ángulo de pitch (rotacion sobre eje X)
+let yaw = -90.0;       // Ángulo de yaw (rotacion sobre eje Y)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
 /**
@@ -423,7 +480,7 @@ document.addEventListener("mousemove", (event) => {
  */
 function update_camera_direction() {
 	// Comprobar que pitch y yaw no superan los valores extremo
-	pitch = Math.max(-89, Math.min(89, pitch)); 
+	//pitch = Math.max(-89, Math.min(89, pitch)); 
 	//yaw = Math.max(-89, Math.min(89, yaw));
 
 	// Conversion de pitch y yaw a radianes
@@ -521,7 +578,7 @@ window.onload = function init() {
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	// Set up camera	
-	eye = vec3(-5.0, 5.0, 10.0);
+	eye = vec3(0.0, 0.0, 3.0);
 	target =  vec3(0.0, 0.0, 0.0);
 	up =  vec3(0.0, 1.0, 0.0);
 	view = lookAt(eye,target,up);
@@ -574,6 +631,54 @@ function render() {
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
+
+	for(let i=0; i < planetas.length; i++){
+		// Reset a origen
+		spheresToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
+		
+		// Inclinacion de la orbita
+		spheresToDraw[i].uniforms.u_model =
+			mult(
+				spheresToDraw[i].uniforms.u_model,
+				planetas[i].Matriz_Inclinacion_Orbita
+			)
+		;
+
+		// Desplazamiento en la orbita
+		let ROrb = rotate(planetas[i].posRotOrbita, planetas[i].ejeRotOrbita);
+		spheresToDraw[i].uniforms.u_model = 
+			mult(spheresToDraw[i].uniforms.u_model, ROrb)
+		;
+
+		// Traslación
+		spheresToDraw[i].uniforms.u_model = 
+			mult(
+				spheresToDraw[i].uniforms.u_model,
+				planetas[i].Matriz_Traslacion_R_Orbita
+			)
+		;
+
+		// Rotación sobre si mismo en los 3 ejes
+		let RMZ = rotate(planetas[i].posRotZMismo, ejeZ);
+		spheresToDraw[i].uniforms.u_model =
+			mult(spheresToDraw[i].uniforms.u_model, RMZ)
+		;
+
+		let RMY = rotate(planetas[i].posRotYMismo, ejeY);
+		spheresToDraw[i].uniforms.u_model =
+			mult(spheresToDraw[i].uniforms.u_model, RMY)
+		;
+
+		let RMX = rotate(planetas[i].posRotXMismo, ejeX);
+		spheresToDraw[i].uniforms.u_model =
+			mult(spheresToDraw[i].uniforms.u_model, RMX)
+		;
+		
+		// Escalado de tamaño
+		spheresToDraw[i].uniforms.u_model = 
+			mult(spheresToDraw[i].uniforms.u_model, planetas[i].Matriz_Escalado)
+		;
+	}
 	
 	//----------------------------------------------------------------------------
 	// DRAW
@@ -608,6 +713,12 @@ function render() {
     });	
     
 	rotAngle += rotChange;
+	for (let i=0; i < planetas.length; i++) {
+		planetas[i].posRotOrbita += planetas[i].velRotOrbita
+		planetas[i].posRotXMismo += planetas[i].velRotXMismo
+		planetas[i].posRotYMismo += planetas[i].velRotYMismo
+		planetas[i].posRotZMismo += planetas[i].velRotZMismo
+	}
 	requestAnimationFrame(render);
 	
 }
