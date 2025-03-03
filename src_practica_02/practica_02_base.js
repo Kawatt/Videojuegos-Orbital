@@ -14,52 +14,7 @@ var gl;
 // MODEL DATA 
 //----------------------------------------------------------------------------
 
-const MAX_CUBOS = 20;
-const MAX_RADIO = 9;
-const MIN_RADIO = 1;
-const MAX_ESCALA = 1.3;
-const MIN_ESCALA = 0.1;
-const MAX_VEL = 2;
-const MIN_VEL = 0.1;
 const VEL_MOVIMIENTO = 0.1;
-
-//Define points' position vectors
-const cubeVerts = [
-	[ 0.5, 0.5, 0.5, 1], //0
-	[ 0.5, 0.5,-0.5, 1], //1
-	[ 0.5,-0.5, 0.5, 1], //2
-	[ 0.5,-0.5,-0.5, 1], //3
-	[-0.5, 0.5, 0.5, 1], //4
-	[-0.5, 0.5,-0.5, 1], //5
-	[-0.5,-0.5, 0.5, 1], //6
-	[-0.5,-0.5,-0.5, 1], //7
-];
-
-const wireCubeIndices = [
-//Wire Cube - use LINE_STRIP, starts at 0, 30 vertices
-	0,4,6,2,0, //front
-	1,0,2,3,1, //right
-	5,1,3,7,5, //back
-	4,5,7,6,4, //right
-	4,0,1,5,4, //top
-	6,7,3,2,6, //bottom
-];
-
-const cubeIndices = [	
-//Solid Cube - use TRIANGLES, starts at 0, 36 vertices
-	0,4,6, //front
-	0,6,2,
-	1,0,2, //right
-	1,2,3, 
-	5,1,3, //back
-	5,3,7,
-	4,5,7, //left
-	4,7,6,
-	4,0,1, //top
-	4,1,5,
-	6,7,3, //bottom
-	6,3,2,
-];
 
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
@@ -68,25 +23,6 @@ pointsAxes.push([ 0.0, 2.0, 0.0, 1.0]); //y axis is red
 pointsAxes.push([ 0.0,-2.0, 0.0, 1.0]); 
 pointsAxes.push([ 0.0, 0.0, 2.0, 1.0]); //z axis is blue
 pointsAxes.push([ 0.0, 0.0,-2.0, 1.0]);
-
-const pointsWireCube = [];
-for (let i=0; i < wireCubeIndices.length; i++)
-{
-	pointsWireCube.push(cubeVerts[wireCubeIndices[i]]);
-}
-
-// Cubo solido
-const pointsCube = [];
-for (let i=0; i < cubeIndices.length; i++)
-{
-	pointsCube.push(cubeVerts[cubeIndices[i]]);
-}
-
-const shapes = {
-	wireCube: {Start: 0, Vertices: 30},
-	cube: {Start: 0, Vertices: 36},
-	axes: {Start: 0, Vertices: 6}
-};
 	
 const red =			[1.0, 0.0, 0.0, 1.0];
 const green =		[0.0, 1.0, 0.0, 1.0];
@@ -100,34 +36,7 @@ const colorsAxes = [
 	green, green, //x
 	red, red,     //y
 	blue, blue,   //z
-];	
-
-const colorsWireCube = [
-	white, white, white, white, white,
-	white, white, white, white, white,
-	white, white, white, white, white,
-	white, white, white, white, white,
-	white, white, white, white, white,
-	white, white, white, white, white,
-];
-
-const colorsCube = [	
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightgreen, lightgreen, lightgreen, lightgreen, lightgreen, lightgreen,
-	lightred, lightred, lightred, lightred, lightred, lightred,
-	blue, blue, blue, blue, blue, blue,
-	red, red, red, red, red, red,
-	green, green, green, green, green, green,
-];	
-
-const colorsCubeSolid = [	
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-	lightblue, lightblue, lightblue, lightblue, lightblue, lightblue,
-];	
+];		
 
 //----------------------------------------------------------------------------
 // OTHER DATA 
@@ -153,9 +62,6 @@ var programInfo = {
 };
 
 var objectsToDraw = [
-];
-
-objectsToDraw.push(
 	{
 		programInfo: programInfo,
 		pointsArray: pointsAxes, 
@@ -166,7 +72,9 @@ objectsToDraw.push(
 		},
 		primType: "lines",
 	},
-);
+];
+var spheresToDraw = [
+];
 
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
@@ -263,7 +171,7 @@ function normalize_new(v) {
 const { pointsArray, colorsArray } = generateIcosahedronSphere(3);
 
 // Añadir el objeto a WebGL
-objectsToDraw.push({
+spheresToDraw.push({
     programInfo: programInfo,
     pointsArray: pointsArray,
     colorsArray: colorsArray,
@@ -285,16 +193,19 @@ var es_perspectiva = true; 	// Variable para determinar la vista activa
 var field = 45.0;			// Variable campo de vista
 var eje_X_rotado_yaw = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
 var eje_Z_rotado_yaw = vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0);
+var eje_Y_rotado_yaw = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
 
 
 // 1 si esta siendo pulsada, 0 si ha sido soltada
 var teclas_pulsadas = {
+	delante: 0,
+	atras: 0,
 	arriba: 0,
 	abajo: 0,
 	izquierda: 0,
 	derecha: 0,
-	mas: 0,
-	menos: 0,
+	girder: 0,
+	girizq: 0,
 };
 
 /**
@@ -306,34 +217,42 @@ var teclas_pulsadas = {
 function keyPressedHandler(event) {
     switch(event.key) {
 		case "ArrowUp":
-			teclas_pulsadas.arriba = 1;
+		case "w":
+		case "W":
+			teclas_pulsadas.delante = 1;
 			break;
 		case "ArrowDown":
-			teclas_pulsadas.abajo = 1;
+		case "s":
+		case "S":
+			teclas_pulsadas.atras = 1;
 			break;
 		case "ArrowLeft":
+		case "a":
+		case "A":
 			teclas_pulsadas.izquierda = 1;
 			break;
 		case "ArrowRight":
+		case "d":
+		case "D":
 			teclas_pulsadas.derecha = 1;
 			break;
-		case "p":
-		case "P":
-			es_perspectiva = true;
+		case " ":
+			teclas_pulsadas.arriba = 1;
 			break;
-		case "o":
-		case "O":
-			es_perspectiva = false;
-			field = 45.0; // Reestablecer el valor por defecto
+		case "Shift":
+			teclas_pulsadas.abajo = 1;
 			break;
-		case "+":
-			teclas_pulsadas.mas = 1;
+		case "e":
+		case "E":
+			teclas_pulsadas.girder = 1;
 			break;
-		case "-":
-				teclas_pulsadas.menos = 1;
+		case "q":
+		case "Q":
+			teclas_pulsadas.girizq = 1;
 			break;
 		default:
-			console.log("Unhandled input");
+			console.log("tecla pulsada: " + event.key)
+			break;
 	}
 }
 
@@ -343,22 +262,38 @@ function keyPressedHandler(event) {
 function keyReleasedHandler(event) {
     switch(event.key) {
 		case "ArrowUp":
-			teclas_pulsadas.arriba = 0;
+		case "w":
+		case "W":
+			teclas_pulsadas.delante = 0;
 			break;
 		case "ArrowDown":
-			teclas_pulsadas.abajo = 0;
+		case "s":
+		case "S":
+			teclas_pulsadas.atras = 0;
 			break;
 		case "ArrowLeft":
+		case "a":
+		case "A":
 			teclas_pulsadas.izquierda = 0;
 			break;
 		case "ArrowRight":
+		case "d":
+		case "D":
 			teclas_pulsadas.derecha = 0;
 			break;
-		case "+":
-			teclas_pulsadas.mas = 0;
+		case " ":
+			teclas_pulsadas.arriba = 0;
 			break;
-		case "-":
-			teclas_pulsadas.menos = 0;
+		case "Shift":
+			teclas_pulsadas.abajo = 0;
+			break;
+		case "e":
+		case "E":
+			teclas_pulsadas.girder = 0;
+			break;
+		case "q":
+		case "Q":
+			teclas_pulsadas.girizq = 0;
 			break;
 		default:
 			break;
@@ -371,57 +306,55 @@ function keyReleasedHandler(event) {
  * según la dirección de movimiento y la velocidad definida.
  */
 function mover_camara() {
-	if (teclas_pulsadas.arriba == 1) {
+	if (teclas_pulsadas.delante == 1) {
         eye[0] += VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
         target[0] += VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
+        eye[1] += VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
+        target[1] += VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
 		eye[2] += VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
         target[2] += VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
     }
-    if (teclas_pulsadas.abajo == 1) {
+    if (teclas_pulsadas.atras == 1) {
         eye[0] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
         target[0] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
+        target[1] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[1];
 		eye[2] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
         target[2] -= VEL_MOVIMIENTO * eje_X_rotado_yaw[2];
     }
+	if (teclas_pulsadas.arriba == 1) {
+        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
+        target[0] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
+        target[1] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
+		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+        target[2] += VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+    }
+    if (teclas_pulsadas.abajo == 1) {
+        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
+        target[0] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
+        target[1] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[1];
+		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+        target[2] -= VEL_MOVIMIENTO * eje_Y_rotado_yaw[2];
+    }
     if (teclas_pulsadas.derecha == 1) {
-        eye[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
-        target[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
 		eye[0] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
         target[0] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
+        target[1] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
+        eye[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
+        target[2] += VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
     }
     if (teclas_pulsadas.izquierda == 1) {
-        eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
-        target[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2]; 
 		eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
         target[0] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[1];
+        target[1] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[1]; 
+        eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2];
+        target[2] -= VEL_MOVIMIENTO * eje_Z_rotado_yaw[2]; 
 		
     }
-}
-
-/**
- * Ajusta la proyección de la cámara en cada frame.
- * Modifica el campo de visión (FOV) si la proyección es en perspectiva,
- * permitiendo hacer zoom in/out con las teclas correspondientes.
- * Alterna entre proyección en perspectiva y ortográfica según la configuración.
- */
-function ajustar_proyeccion() {
-	// Aplicar la proyección en cada frame
-	if (es_perspectiva) {
-		if(teclas_pulsadas.mas == 1) { 
-			if(field > 10){
-				field -= 1.0;
-			}
-		}
-		if(teclas_pulsadas.menos == 1) { 
-			if(field < 150){
-				field += 1.0; 
-			}
-		}
-		proy_perspectiva();		
-	} else {
-		proy_orto();
-	}
-	gl.uniformMatrix4fv(programInfo.uniformLocations.projection, gl.FALSE, projection);
 }
 
 
@@ -563,6 +496,8 @@ window.onload = function init() {
 	gl.enable(gl.DEPTH_TEST);
 
 	setPrimitive(objectsToDraw);
+	setPrimitive(spheresToDraw);
+
 
 	// Set up a WebGL program
 	// Load shaders and initialize attribute buffers
@@ -623,6 +558,8 @@ function nuevo_eje_movimiento(){
 			vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
 	eje_Z_rotado_yaw = mult(matriz_rot_X, 
 		vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
+	eje_Y_rotado_yaw = mult(matriz_rot_X, 
+		vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
 }
 
 function render() {
@@ -635,7 +572,6 @@ function render() {
 
 	nuevo_eje_movimiento();
 	mover_camara();
-	ajustar_proyeccion();
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
@@ -645,6 +581,20 @@ function render() {
 	//----------------------------------------------------------------------------
 
 	objectsToDraw.forEach(function(object) {
+
+		gl.useProgram(object.programInfo.program);
+
+		// Setup buffers and attributes
+		setBuffersAndAttributes(object.programInfo, object.pointsArray, object.colorsArray);
+
+		// Set the uniforms
+		setUniforms(object.programInfo, object.uniforms);
+
+		// Draw
+		gl.drawArrays(object.primitive, 0, object.pointsArray.length);
+    });	
+
+	spheresToDraw.forEach(function(object) {
 
 		gl.useProgram(object.programInfo.program);
 
