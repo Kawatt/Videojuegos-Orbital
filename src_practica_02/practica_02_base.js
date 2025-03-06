@@ -356,63 +356,10 @@ function keyReleasedHandler(event) {
 
 var right = vec3(1.0,0.0,0.0)
 var forward = vec3(0.0,0.0,-1.0)
-/**
- * Actualiza la dirección de la cámara según los ángulos de pitch y yaw.
- * Limita los valores extremos, convierte a radianes, calcula la nueva dirección
- * y ajusta el objetivo (target) en función de la posición actual (eye).
- */
-function update_camera_direction() {
-    // Conversión de pitch, yaw y roll a radianes
-    let radPitch = -pitch * (Math.PI / 180.0);
-    let radYaw = yaw * (Math.PI / 180.0);  // Invertir yaw para el movimiento correcto a la derecha
-    let radRoll = roll * (Math.PI / 180.0);
 
-    // Matrices de rotación individuales
-    let rotationYaw = mat4(
-        Math.cos(radYaw), 0, Math.sin(radYaw), 0,
-        0, 1, 0, 0,
-        -Math.sin(radYaw), 0, Math.cos(radYaw), 0,
-        0, 0, 0, 1
-    );
-
-    let rotationPitch = mat4(
-        1, 0, 0, 0,
-        0, Math.cos(radPitch), -Math.sin(radPitch), 0,
-        0, Math.sin(radPitch), Math.cos(radPitch), 0,
-        0, 0, 0, 1
-    );
-
-    let rotationRoll = mat4(
-        Math.cos(radRoll), -Math.sin(radRoll), 0, 0,
-        Math.sin(radRoll), Math.cos(radRoll), 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-    );
-
-    // Combinación de las matrices de rotación 4x4
-    let combinedRotation = mult(rotationYaw, rotationPitch);  // Primero Yaw y Pitch
-    combinedRotation = mult(combinedRotation, rotationRoll);  // Luego Roll
-
-    // Dirección inicial (mirando hacia el frente, eje Z)
-    forward = vec3(0, 0, -1);  // Apunta hacia el eje Z negativo
-
-    // Aplicar la rotación combinada a la dirección (con una matriz 4x4)
-    forward = mult(combinedRotation, vec4(forward[0], forward[1], forward[2], 1));
-
-    // Normalizar el vector resultante para asegurarse de que tenga una magnitud de 1
-    forward = normalize(vec3(forward[0], forward[1], forward[2]));
-
-    // Calcular el vector "derecha" (right) perpendicular a la dirección
-    right = normalize(cross(vec3(0, 1, 0), forward)); // Cruza la dirección con el vector "arriba" (0,1,0)
-
-    // Calcular el vector "arriba" (up) como el producto cruzado entre derecha y dirección
-    up = normalize(cross(right, forward));
-
-    // Cálculo del target dada la posición y la dirección
-    target = add(eye, forward);
-
-    // Opcional: devolver o usar los vectores derecha y arriba según sea necesario
-}
+eye = vec3(0.0,0.0,-3.0)
+target = eye + forward 
+var ejeCamara = new mat4()
 
 
 function mult_mat3(u, v){
@@ -448,13 +395,17 @@ function nuevo_eje_movimiento() {
     //eje_Y_rotado = mult(matriz_rot_pitch, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
 
 	let matriz_rot_yaw = rotate(yaw, ejeY);
-    let matriz_rot_pitch = rotate(pitch, ejeZ);
+    let matriz_rot_pitch = rotate(pitch, ejeX);
     
-    let matriz_rot = mult(matriz_rot_yaw, matriz_rot_pitch);
+    let matriz_rot = mult(matriz_rot_pitch, matriz_rot_yaw);
     
-    eje_X_rotado = mult(matriz_rot, vec4(ejeX[0], -ejeX[1], ejeX[2], 0.0));
-    eje_Y_rotado = mult(matriz_rot, vec4(ejeY[0], -ejeY[1], ejeY[2], 0.0));
-    eje_Z_rotado = mult(matriz_rot, vec4(ejeZ[0], -ejeZ[1], ejeZ[2], 0.0));
+    eje_X_rotado = mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
+    eje_Y_rotado = mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
+    eje_Z_rotado = mult(matriz_rot, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
+
+	target = vec3(eye[0]+eje_Z_rotado[0], eye[1]+eje_Z_rotado[1], eye[2]+eje_Z_rotado[2])
+	up = vec3(eje_Y_rotado[0], eje_Y_rotado[1], eje_Y_rotado[2])
+	console.log("Pitch: " + pitch + ", Yaw: " + yaw)
 }
 
 /**
@@ -463,57 +414,36 @@ function nuevo_eje_movimiento() {
  * según la dirección de movimiento y la velocidad definida.
  */
 function mover_camara() {
-	//console.log(up);
 	if (teclas_pulsadas.delante == 1) {
-        eye[0] += VEL_MOVIMIENTO * forward[0];
-        target[0] += VEL_MOVIMIENTO * forward[0];
-        eye[1] += VEL_MOVIMIENTO * forward[1];
-        target[1] += VEL_MOVIMIENTO * forward[1];
-		eye[2] += VEL_MOVIMIENTO * forward[2];
-        target[2] += VEL_MOVIMIENTO * forward[2];
+        eye[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
+		eye[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
     }
     if (teclas_pulsadas.atras == 1) {
-        eye[0] -= VEL_MOVIMIENTO * forward[0];
-        target[0] -= VEL_MOVIMIENTO * forward[0];
-        eye[1] -= VEL_MOVIMIENTO * forward[1];
-        target[1] -= VEL_MOVIMIENTO * forward[1];
-		eye[2] -= VEL_MOVIMIENTO * forward[2];
-        target[2] -= VEL_MOVIMIENTO * forward[2];
+        eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1];
+		eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2];
     }
 	if (teclas_pulsadas.arriba == 1) {
-        eye[0] += VEL_MOVIMIENTO * up[0];
-        target[0] += VEL_MOVIMIENTO * up[0];
-        eye[1] += VEL_MOVIMIENTO * up[1];
-        target[1] += VEL_MOVIMIENTO * up[1];
-		eye[2] += VEL_MOVIMIENTO * up[2];
-        target[2] += VEL_MOVIMIENTO * up[2];
+        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
+		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
     }
     if (teclas_pulsadas.abajo == 1) {
-        eye[0] -= VEL_MOVIMIENTO * up[0];
-        target[0] -= VEL_MOVIMIENTO * up[0];
-        eye[1] -= VEL_MOVIMIENTO * up[1];
-        target[1] -= VEL_MOVIMIENTO * up[1];
-		eye[2] -= VEL_MOVIMIENTO * up[2];
-        target[2] -= VEL_MOVIMIENTO * up[2];
-    }
-    if (teclas_pulsadas.derecha == 1) {
-		eye[0] += VEL_MOVIMIENTO * right[0];
-        target[0] += VEL_MOVIMIENTO * right[0];
-        eye[1] += VEL_MOVIMIENTO * right[1];
-        target[1] += VEL_MOVIMIENTO * right[1];
-        eye[2] += VEL_MOVIMIENTO * right[2];
-        target[2] += VEL_MOVIMIENTO * right[2];
+        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
+		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
     }
     if (teclas_pulsadas.izquierda == 1) {
-		eye[0] -= VEL_MOVIMIENTO * right[0];
-        target[0] -= VEL_MOVIMIENTO * right[0];
-        eye[1] -= VEL_MOVIMIENTO * right[1];
-        target[1] -= VEL_MOVIMIENTO * right[1]; 
-        eye[2] -= VEL_MOVIMIENTO * right[2];
-        target[2] -= VEL_MOVIMIENTO * right[2]; 
+		eye[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
+        eye[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
+        eye[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
     }
-
-	//aplicar_roll()
+    if (teclas_pulsadas.derecha == 1) {
+		eye[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
+        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
+        eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
+    }
 }
 
 function aplicar_roll() {
@@ -614,9 +544,7 @@ document.addEventListener("mousemove", (event) => {
 		
 		// Calculo de yaw y pitch dados los offsets y sensibilidad
 		yaw += offsetX * sensitivity;
-		pitch -= offsetY * sensitivity; 
-
-        update_camera_direction();
+		pitch -= offsetY * sensitivity;
     }
 });
 
@@ -666,7 +594,7 @@ window.onload = function init() {
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	// Set up camera	
-	eye = vec3(0.0, 0.0, 3.0);
+	eye = vec3(0.0, 0.0, -3.0);
 	target =  vec3(0.0, 0.0, 0.0);
 	up =  vec3(0.0, 1.0, 0.0);
 	view = lookAt(eye,target,up);
@@ -703,9 +631,11 @@ function render() {
 	// MOVE STUFF AROUND
 	//----------------------------------------------------------------------------
 
-	nuevo_eje_movimiento();
 	mover_camara();
+	nuevo_eje_movimiento();
 	//girar_camara();
+
+	// teleport
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
