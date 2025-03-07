@@ -181,6 +181,17 @@ spheresToDraw.push({
     primType: "triangles",
 });
 
+spheresToDraw.push({
+    programInfo: programInfo,
+    pointsArray: pointsArray,
+    colorsArray: colorsArray,
+    uniforms: {
+        u_colorMult: [1.0, 1.0, 1.0, 1.0],
+        u_model: new mat4(),
+    },
+    primType: "triangles",
+});
+
 var planetas = [
 ];
 
@@ -239,6 +250,7 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, v
 
 //radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc
 generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX);
+generar_planeta(1, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeY, ejeX);
 
 
 //------------------------------------------------------------------------------
@@ -358,24 +370,7 @@ var right = vec3(1.0,0.0,0.0)
 var forward = vec3(0.0,0.0,-1.0)
 
 eye = vec3(0.0,0.0,-3.0)
-target = eye + forward 
-var ejeCamara = new mat4()
-
-
-function mult_mat3(u, v){
-	let result = mat3();
-	result[0] = v[0]*u[0]+v[1]*u[3]+v[2]*u[6];
-	result[1] = v[0]*u[1]+v[1]*u[4]+v[2]*u[7];
-	result[2] = v[0]*u[2]+v[1]*u[5]+v[2]*u[8];
-	result[3] = v[3]*u[0]+v[4]*u[3]+v[5]*u[6];
-	result[4] = v[3]*u[1]+v[4]*u[4]+v[5]*u[7];
-	result[5] = v[3]*u[2]+v[4]*u[5]+v[5]*u[8];
-	result[6] = v[6]*u[0]+v[7]*u[3]+v[8]*u[6];
-	result[7] = v[6]*u[1]+v[7]*u[4]+v[8]*u[7];
-	result[8] = v[6]*u[2]+v[7]*u[5]+v[8]*u[8];
-	return result
-}
-
+target = eye + forward
 
 var eje_X_rotado = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
 var eje_Y_rotado = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
@@ -385,27 +380,27 @@ var eje_Z_rotado = vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0);
  * Calcula las componentes a tener en cuenta en el movimiento dado el yaw
  */
 function nuevo_eje_movimiento() {
-    // Calcular matriz de rotacion del eje X 
-    //let matriz_rot_yaw = rotate(yaw, ejeY);
-    //eje_X_rotado = mult(matriz_rot_yaw, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-    //eje_Z_rotado = mult(matriz_rot_yaw, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
-    
-    // Calcular matriz de rotación del pitch (vertical) sobre el eje X rotado
-    //let matriz_rot_pitch = rotate(pitch, vec3(eje_X_rotado[0], eje_X_rotado[1], eje_X_rotado[2]));
-    //eje_Y_rotado = mult(matriz_rot_pitch, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
 
 	let matriz_rot_yaw = rotate(yaw, ejeY);
-    let matriz_rot_pitch = rotate(pitch, ejeX);
+	let ejeX2 = mult(matriz_rot_yaw, vec4(ejeX[0],ejeX[1],ejeX[2],0));
+	let ejeZ2 = mult(matriz_rot_yaw, vec4(ejeZ[0],ejeZ[1],ejeZ[2],0));
+
+    let matriz_rot_pitch = rotate(pitch, vec3(ejeX2[0],ejeX2[1],ejeX2[2]));
+	let ejeY2 = mult(matriz_rot_pitch, vec4(ejeY[0],ejeY[1],ejeY[2],0));
+	let ejeZ3 = mult(matriz_rot_pitch, ejeZ2);
+
+    let matriz_rot_roll = rotate(roll, vec3(ejeZ3[0],ejeZ3[1],ejeZ3[2]));
+	let ejeY3 = mult(matriz_rot_roll, ejeY2);
+	let ejeX3 = mult(matriz_rot_roll, ejeX2);
     
-    let matriz_rot = mult(matriz_rot_pitch, matriz_rot_yaw);
+    //let matriz_rot = mult(matriz_rot_yaw, matriz_rot_pitch);
     
-    eje_X_rotado = mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-    eje_Y_rotado = mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
-    eje_Z_rotado = mult(matriz_rot, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
+    eje_X_rotado = ejeX3 //mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
+    eje_Y_rotado = ejeY3 //mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
+    eje_Z_rotado = ejeZ3 //mult(matriz_rot, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
 
 	target = vec3(eye[0]+eje_Z_rotado[0], eye[1]+eje_Z_rotado[1], eye[2]+eje_Z_rotado[2])
 	up = vec3(eje_Y_rotado[0], eje_Y_rotado[1], eje_Y_rotado[2])
-	console.log("Pitch: " + pitch + ", Yaw: " + yaw)
 }
 
 /**
