@@ -322,6 +322,7 @@ var teclas_pulsadas = {
 	lookizq: 0,
 	lookup: 0,
 	lookdown: 0,
+	parar: 0,
 };
 
 /**
@@ -374,6 +375,9 @@ function keyPressedHandler(event) {
 			break;
 		case "ArrowLeft":
 			teclas_pulsadas.lookizq = 1;
+			break;
+		case "Control":
+			teclas_pulsadas.parar = 1;
 			break;
 		default:
 			console.log("tecla pulsada: " + event.key)
@@ -432,6 +436,9 @@ function keyReleasedHandler(event) {
 		case "ArrowLeft":
 			teclas_pulsadas.lookizq = 0;
 			break;
+		case "Control":
+			teclas_pulsadas.parar = 0;
+			break;
 		default:
 			break;
 	}
@@ -467,27 +474,25 @@ function nuevo_eje_movimiento() {
 
 }
 
+function reduceToZero(vec) {
+    const epsilon = 0.0001;  // Umbral para considerar que el valor es suficientemente cercano a 0
+    for (let i = 0; i < vec.length; i++) {
+        if (Math.abs(vec[i]) < epsilon) {
+            vec[i] = 0;  // Si el valor está cerca de 0, se pone directamente en 0
+        } else {
+            // Reducir el valor de forma gradual hacia 0
+            vec[i] *= 0.99;  // Reduce el valor un 1% por cada paso
+        }
+    }
+    return vec;
+}
+
 /**
  * Mueve o gira la cámara en función de las teclas presionadas.
  */
 function mover_camara(dt) {
-	if (teclas_pulsadas.delante == 1) {
-        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_Z_rotado));
-    }
-    if (teclas_pulsadas.atras == 1) {
-       //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_Z_rotado));
-    }
-	if (teclas_pulsadas.arriba == 1) {
-        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_Y_rotado));
-    }
-    if (teclas_pulsadas.abajo == 1) {
-        //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_Y_rotado));
-    }
-    if (teclas_pulsadas.izquierda == 1) {
-        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_X_rotado));
-    }
-    if (teclas_pulsadas.derecha == 1) {
-        //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_X_rotado));
+	if (teclas_pulsadas.parar == 1) {
+        jugador.velocity = reduceToZero(jugador.velocity);
     }
 	if (teclas_pulsadas.girder == 1) {
 		roll -= VEL_ROTACION
@@ -668,7 +673,7 @@ function update(dt) {
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 	eye = jugador.position;
-	console.log("Posición: " + jugador.position + ", Velocidad: " + jugador.velocity);
+	console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
 //----------------------------------------------------------------------------
