@@ -17,6 +17,7 @@ var gl;
 const VEL_MOVIMIENTO = 0.1;
 const VEL_ROTACION = 0.4;
 const VEL_MIRAR = 1.2;
+const SENSITIVITY = 0.05;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
@@ -488,7 +489,6 @@ function mover_camara() {
 // Rotacion de la camara
 //------------------------------------------------------------------------------
 
-const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
@@ -537,8 +537,8 @@ document.addEventListener("mousemove", (event) => {
 		lastY = event.clientY;
 		
 		// Calculo de yaw y pitch dados los offsets y sensibilidad
-		yaw += offsetX * sensitivity;
-		pitch -= offsetY * sensitivity;
+		yaw += offsetX * SENSITIVITY;
+		pitch -= offsetY * SENSITIVITY;
     }
 });
 
