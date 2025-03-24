@@ -14,8 +14,7 @@ var gl;
 
 const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.1 * ESCALA;
-const VEL_ROTACION = 0.4;
-const VEL_MIRAR = 1.2;
+const VEL_MIRAR = 12 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
 const pointsAxes = [];
@@ -272,7 +271,9 @@ var jugador = {
 	position: vec3(0.0, 0.0, -3.0),
 	velocity: vec3(0.0, 0.0, 0.0),
 	acceleration: vec3(0.0, 0.0, 0.0),
-	angular_velocity: vec3(0.0, 0.0, 0.0),
+	yaw_velocity: 0.0,
+	pitch_velocity: 0.0,
+	roll_velocity: 0.0,
 	rotation: vec3(0.0, 0.0, 0.0),
 	diameter: 1.5,
 }
@@ -494,6 +495,17 @@ function aplicarFuerzaOpuesta(dt, velocidad) {
 	);
 }
 
+function reducirGiro(dt, valor) {
+    // Si el valor es casi cero, considera que ya se ha detenido
+    if (Math.abs(valor) < 1e-5) return 0;
+
+    // Asegura que no se invierta la dirección al llegar a 0
+    const factorAplicado = Math.min(VEL_MIRAR * dt, Math.abs(valor));
+
+    // Reduce el valor hacia 0
+    return valor - Math.sign(valor) * factorAplicado;
+}
+
 /**
  * Mueve o gira la cámara en función de las teclas presionadas.
  */
@@ -502,22 +514,31 @@ function mover_camara(dt) {
         jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity);
     }
 	if (teclas_pulsadas.girder == 1) {
-		roll -= VEL_ROTACION
+		jugador.roll_velocity += -VEL_MIRAR * dt
     }
 	if (teclas_pulsadas.girizq == 1) {
-		roll += VEL_ROTACION
+		jugador.roll_velocity += VEL_MIRAR * dt
     }
 	if (teclas_pulsadas.lookder == 1) {
-		yaw += VEL_MIRAR
+		jugador.yaw_velocity += VEL_MIRAR * dt
     }
 	if (teclas_pulsadas.lookizq == 1) {
-		yaw -= VEL_MIRAR
+		jugador.yaw_velocity += -VEL_MIRAR * dt
     }
 	if (teclas_pulsadas.lookup == 1) {
-		pitch += VEL_MIRAR
+		jugador.pitch_velocity += VEL_MIRAR * dt
     }
 	if (teclas_pulsadas.lookdown == 1) {
-		pitch -= VEL_MIRAR
+		jugador.pitch_velocity += -VEL_MIRAR * dt
+    }
+	if ((teclas_pulsadas.girder == 0) & (teclas_pulsadas.girizq == 0)) {
+		jugador.roll_velocity = reducirGiro(dt, jugador.roll_velocity)
+    }
+	if ((teclas_pulsadas.lookder == 0) & (teclas_pulsadas.lookizq == 0)) {
+		jugador.yaw_velocity = reducirGiro(dt, jugador.yaw_velocity)
+    }
+	if ((teclas_pulsadas.lookup == 0) & (teclas_pulsadas.lookdown == 0)) {
+		jugador.pitch_velocity = reducirGiro(dt, jugador.pitch_velocity)
     }
 }
 
@@ -680,6 +701,9 @@ function update(dt) {
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 	eye = jugador.position;
+	yaw = jugador.yaw_velocity;
+	pitch = jugador.pitch_velocity;
+	roll = jugador.roll_velocity;
 	console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
