@@ -25,6 +25,7 @@ pointsAxes.push([ 0.0,-2.0, 0.0, 1.0]);
 pointsAxes.push([ 0.0, 0.0, 2.0, 1.0]); //z axis is blue
 pointsAxes.push([ 0.0, 0.0,-2.0, 1.0]);
 	
+const default_color =	[0.5, 0.5, 0.5, 1.0];
 const red =			[1.0, 0.0, 0.0, 1.0];
 const green =		[0.0, 1.0, 0.0, 1.0];
 const blue =		[0.0, 0.0, 1.0, 1.0];
@@ -63,7 +64,7 @@ var programInfo = {
 };
 
 var objectsToDraw = [
-	{
+	/*{
 		programInfo: programInfo,
 		pointsArray: pointsAxes, 
 		colorsArray: colorsAxes, 
@@ -72,7 +73,7 @@ var objectsToDraw = [
 		  u_model: new mat4(),
 		},
 		primType: "lines",
-	},
+	},*/
 ];
 var spheresToDraw = [
 ];
@@ -140,22 +141,16 @@ function generateIcosahedronSphere(subdivisions) {
 
     // Convertir los datos a buffers planos
     let pointsArray = [];
-    let colorsArray = [];
 
     for (let tri of indices) {
         for (let idx of tri) {
             let v = vertices[idx];
             pointsArray.push(...v);
-
-			let greenValue = Math.random()*0.6+0.2;
-			let redValue = 1.0;
-			let blueValue = 0.0;
-			colorsArray.push(redValue, greenValue, blueValue, 1.0);
 			
         }
     }
 
-    return { pointsArray, colorsArray };
+    return { pointsArray };
 }
 
 function sphere_color() {
@@ -169,7 +164,31 @@ function normalize_new(v) {
 }
 
 // Generar esfera con 3 subdivisiones (más alto -> más detallado)
-const { pointsArray, colorsArray } = generateIcosahedronSphere(3);
+const { pointsArray } = generateIcosahedronSphere(3);
+
+function arrayColorSun() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let greenValue = Math.random()*0.6+0.2;
+		let redValue = 1.0;
+		let blueValue = 0.0;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+var colorsArraySun = arrayColorSun()
+
+function arrayColorPlanet() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let greenValue = Math.random()*0.6+0.2;
+		let blueValue = 1.0;
+		let redValue = 0.0;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+var colorsArrayPlanet = arrayColorPlanet()
 
 var planetas = [
 ];
@@ -192,7 +211,7 @@ var planetas = [
  * @param {float} incOrb2 - Inclinacion extra de la orbita
  */
 function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, 
-	velOrbita, ejOrb, ejRot, ejInc, incOrb, incOrb2){
+	velOrbita, ejOrb, ejRot, ejInc, incOrb, incOrb2, arrayColor){
 	if (ejRot === ejOrb) {
 		throw new Error('⚠️ Los ejes ejRot y ejOrb no pueden ser iguales.');
 	}
@@ -249,7 +268,7 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 	spheresToDraw.push({
 		programInfo: programInfo,
 		pointsArray: pointsArray,
-		colorsArray: colorsArray,
+		colorsArray: arrayColor,
 		uniforms: {
 			u_colorMult: [1.0, 1.0, 1.0, 1.0],
 			u_model: new mat4(),
@@ -259,9 +278,9 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 }
 
 // Sol central
-generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180);
+generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
-generar_planeta(1, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0);
+generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
 
 //------------------------------------------------------------------------------
 // Nave jugador
@@ -558,7 +577,7 @@ let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
  * Detecta cuando se presiona el botón izquierdo del ratón.
  * Al presionar, guarda la posición inicial del cursor.
  */
-document.addEventListener("mousedown", function(event) {
+/*document.addEventListener("mousedown", function(event) {
     if (event.button === 0) { // 0 = Botón izquierdo
 		raton_pulsado = 1;
 		lastX = event.clientX;
@@ -570,7 +589,7 @@ document.addEventListener("mousedown", function(event) {
  * Detecta cuando se suelta el botón izquierdo del ratón.
  * Al soltar, indica que el botón ya no está pulsado.
  */
-document.addEventListener("mouseup", function(event) {
+/*document.addEventListener("mouseup", function(event) {
     if (event.button === 0) {
         raton_pulsado = 0;
     }
@@ -583,7 +602,7 @@ document.addEventListener("mouseup", function(event) {
  * desplazamiento del cursor y ajusta los valores de yaw y pitch según la 
  * sensibilidad configurada.
  */
-document.addEventListener("mousemove", (event) => {
+/*document.addEventListener("mousemove", (event) => {
 	// Comprobar que el boton esta pulsado
     if (raton_pulsado == 1) {
 		// Obtener los offsets de desplazamiento
@@ -598,7 +617,7 @@ document.addEventListener("mousemove", (event) => {
 		yaw += offsetX * SENSITIVITY;
 		pitch -= offsetY * SENSITIVITY;
     }
-});
+});*/
 
 //----------------------------------------------------------------------------
 // Initialization function
@@ -660,8 +679,8 @@ window.onload = function init() {
 	window.addEventListener("keydown", keyPressedHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
 	
-	canvas.addEventListener("mouseenter", () => mouseInside = true);
-	canvas.addEventListener("mouseleave", () => mouseInside = false);
+	//canvas.addEventListener("mouseenter", () => mouseInside = true);
+	//canvas.addEventListener("mouseleave", () => mouseInside = false);
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -704,7 +723,7 @@ function update(dt) {
 	yaw = jugador.yaw_velocity;
 	pitch = jugador.pitch_velocity;
 	roll = jugador.roll_velocity;
-	console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
+	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
 //----------------------------------------------------------------------------
