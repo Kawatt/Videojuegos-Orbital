@@ -12,7 +12,8 @@ var gl;
 // MODEL DATA 
 //----------------------------------------------------------------------------
 
-const VEL_MOVIMIENTO = 0.1;
+const ESCALA = 0.00001;
+const VEL_MOVIMIENTO = 0.1 * ESCALA;
 const VEL_ROTACION = 0.4;
 const VEL_MIRAR = 1.2;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
@@ -277,6 +278,33 @@ var jugador = {
 }
 
 //------------------------------------------------------------------------------
+// Físicas
+//------------------------------------------------------------------------------
+
+function calcular_gravedad() {
+	let gravedad = vec3(0.0,0.0,0.0);
+	if (teclas_pulsadas.delante == 1) {
+        gravedad = mult(VEL_MOVIMIENTO, eje_Z_rotado);
+    }
+    if (teclas_pulsadas.atras == 1) {
+        gravedad = mult(-VEL_MOVIMIENTO, eje_Z_rotado);
+    }
+	if (teclas_pulsadas.arriba == 1) {
+        gravedad = mult(VEL_MOVIMIENTO, eje_Y_rotado);
+    }
+    if (teclas_pulsadas.abajo == 1) {
+        gravedad = mult(-VEL_MOVIMIENTO, eje_Y_rotado);
+    }
+    if (teclas_pulsadas.izquierda == 1) {
+        gravedad = mult(VEL_MOVIMIENTO, eje_X_rotado);
+    }
+    if (teclas_pulsadas.derecha == 1) {
+        gravedad = mult(-VEL_MOVIMIENTO, eje_X_rotado);
+    }
+	return gravedad;
+}
+
+//------------------------------------------------------------------------------
 // Controles
 //------------------------------------------------------------------------------
 
@@ -442,36 +470,24 @@ function nuevo_eje_movimiento() {
 /**
  * Mueve o gira la cámara en función de las teclas presionadas.
  */
-function mover_camara() {
+function mover_camara(dt) {
 	if (teclas_pulsadas.delante == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_Z_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Z_rotado[1];
-		eye[2] += VEL_MOVIMIENTO * eje_Z_rotado[2];
+        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_Z_rotado));
     }
     if (teclas_pulsadas.atras == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_Z_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Z_rotado[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_Z_rotado[2];
+       //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_Z_rotado));
     }
 	if (teclas_pulsadas.arriba == 1) {
-        eye[0] += VEL_MOVIMIENTO * eje_Y_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_Y_rotado[1];
-		eye[2] += VEL_MOVIMIENTO * eje_Y_rotado[2];
+        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_Y_rotado));
     }
     if (teclas_pulsadas.abajo == 1) {
-        eye[0] -= VEL_MOVIMIENTO * eje_Y_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_Y_rotado[1];
-		eye[2] -= VEL_MOVIMIENTO * eje_Y_rotado[2];
+        //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_Y_rotado));
     }
     if (teclas_pulsadas.izquierda == 1) {
-		eye[0] += VEL_MOVIMIENTO * eje_X_rotado[0];
-        eye[1] += VEL_MOVIMIENTO * eje_X_rotado[1];
-        eye[2] += VEL_MOVIMIENTO * eje_X_rotado[2];
+        //jugador.velocity = add(jugador.velocity, mult(VEL_MOVIMIENTO, eje_X_rotado));
     }
     if (teclas_pulsadas.derecha == 1) {
-		eye[0] -= VEL_MOVIMIENTO * eje_X_rotado[0];
-        eye[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
-        eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
+        //jugador.velocity = add(jugador.velocity, mult(-VEL_MOVIMIENTO, eje_X_rotado));
     }
 	if (teclas_pulsadas.girder == 1) {
 		roll -= VEL_ROTACION
@@ -648,7 +664,11 @@ function tick(nowish) {
  * 
  */
 function update(dt) {
-	jugador.position = add(jugador.position, mult(dt, jugador.velocity))
+	mover_camara(dt);
+	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
+	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
+	eye = jugador.position;
+	console.log("Posición: " + jugador.position + ", Velocidad: " + jugador.velocity);
 }
 
 //----------------------------------------------------------------------------
@@ -659,7 +679,6 @@ function render(dt) {
 
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-	mover_camara();
 	nuevo_eje_movimiento();
 
 	target = vec3(
