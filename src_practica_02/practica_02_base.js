@@ -15,6 +15,8 @@ var gl;
 //----------------------------------------------------------------------------
 
 const VEL_MOVIMIENTO = 0.1;
+const VEL_ROTACION = 0.3;
+const VEL_MIRAR = 1.0;
 
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
@@ -270,6 +272,10 @@ var teclas_pulsadas = {
 	derecha: 0,
 	girder: 0,
 	girizq: 0,
+	lookder: 0,
+	lookizq: 0,
+	lookup: 0,
+	lookdown: 0,
 };
 
 /**
@@ -280,22 +286,22 @@ var teclas_pulsadas = {
  */
 function keyPressedHandler(event) {
     switch(event.key) {
-		case "ArrowUp":
+		//case "ArrowUp":
 		case "w":
 		case "W":
 			teclas_pulsadas.delante = 1;
 			break;
-		case "ArrowDown":
+		//case "ArrowDown":
 		case "s":
 		case "S":
 			teclas_pulsadas.atras = 1;
 			break;
-		case "ArrowLeft":
+		//case "ArrowLeft":
 		case "a":
 		case "A":
 			teclas_pulsadas.izquierda = 1;
 			break;
-		case "ArrowRight":
+		//case "ArrowRight":
 		case "d":
 		case "D":
 			teclas_pulsadas.derecha = 1;
@@ -314,6 +320,18 @@ function keyPressedHandler(event) {
 		case "Q":
 			teclas_pulsadas.girizq = 1;
 			break;
+		case "ArrowUp":
+			teclas_pulsadas.lookup = 1;
+			break;
+		case "ArrowDown":
+			teclas_pulsadas.lookdown = 1;
+			break;
+		case "ArrowRight":
+			teclas_pulsadas.lookder = 1;
+			break;
+		case "ArrowLeft":
+			teclas_pulsadas.lookizq = 1;
+			break;
 		default:
 			console.log("tecla pulsada: " + event.key)
 			break;
@@ -325,22 +343,22 @@ function keyPressedHandler(event) {
  */
 function keyReleasedHandler(event) {
     switch(event.key) {
-		case "ArrowUp":
+		//case "ArrowUp":
 		case "w":
 		case "W":
 			teclas_pulsadas.delante = 0;
 			break;
-		case "ArrowDown":
+		//case "ArrowDown":
 		case "s":
 		case "S":
 			teclas_pulsadas.atras = 0;
 			break;
-		case "ArrowLeft":
+		//case "ArrowLeft":
 		case "a":
 		case "A":
 			teclas_pulsadas.izquierda = 0;
 			break;
-		case "ArrowRight":
+		//case "ArrowRight":
 		case "d":
 		case "D":
 			teclas_pulsadas.derecha = 0;
@@ -359,48 +377,57 @@ function keyReleasedHandler(event) {
 		case "Q":
 			teclas_pulsadas.girizq = 0;
 			break;
+		case "ArrowUp":
+			teclas_pulsadas.lookup = 0;
+			break;
+		case "ArrowDown":
+			teclas_pulsadas.lookdown = 0;
+			break;
+		case "ArrowRight":
+			teclas_pulsadas.lookder = 0;
+			break;
+		case "ArrowLeft":
+			teclas_pulsadas.lookizq = 0;
+			break;
 		default:
 			break;
 	}
 }
 
 // Movimiento y rotación
-
-var right = vec3(1.0,0.0,0.0)
 var forward = vec3(0.0,0.0,-1.0)
 
 eye = vec3(0.0,0.0,-3.0)
 target = eye + forward
 
-var eje_X_rotado = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
-var eje_Y_rotado = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
-var eje_Z_rotado = vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0);
+var eje_X_rotado = vec3(ejeX[0], ejeX[1], ejeX[2]);
+var eje_Y_rotado = vec3(ejeY[0], ejeY[1], ejeY[2]);
+var eje_Z_rotado = vec3(ejeZ[0], ejeZ[1], ejeZ[2]);
 
 /**
  * Calcula las componentes a tener en cuenta en el movimiento dado el yaw
  */
 function nuevo_eje_movimiento() {
 
-	let matriz_rot_yaw = rotate(yaw, ejeY);
-	let ejeX2 = mult(matriz_rot_yaw, vec4(ejeX[0],ejeX[1],ejeX[2],0));
-	let ejeZ2 = mult(matriz_rot_yaw, vec4(ejeZ[0],ejeZ[1],ejeZ[2],0));
+	let matriz_rot_yaw = rotate(yaw, eje_Y_rotado);
+    let matriz_rot_pitch = rotate(pitch, eje_X_rotado);
+    let matriz_rot_roll = rotate(roll, eje_Z_rotado);
 
-    let matriz_rot_pitch = rotate(pitch, vec3(ejeX2[0],ejeX2[1],ejeX2[2]));
-	let ejeY2 = mult(matriz_rot_pitch, vec4(ejeY[0],ejeY[1],ejeY[2],0));
-	let ejeZ3 = mult(matriz_rot_pitch, ejeZ2);
-
-    let matriz_rot_roll = rotate(roll, vec3(ejeZ3[0],ejeZ3[1],ejeZ3[2]));
-	let ejeY3 = mult(matriz_rot_roll, ejeY2);
-	let ejeX3 = mult(matriz_rot_roll, ejeX2);
+	let matriz_total = mult(matriz_rot_pitch, mult(matriz_rot_yaw, matriz_rot_roll));
     
     //let matriz_rot = mult(matriz_rot_yaw, matriz_rot_pitch);
-    
-    eje_X_rotado = ejeX3 //mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-    eje_Y_rotado = ejeY3 //mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
-    eje_Z_rotado = ejeZ3 //mult(matriz_rot, vec4(ejeZ[0], ejeZ[1], ejeZ[2], 0.0));
 
-	target = vec3(eye[0]+eje_Z_rotado[0], eye[1]+eje_Z_rotado[1], eye[2]+eje_Z_rotado[2])
-	up = vec3(eje_Y_rotado[0], eje_Y_rotado[1], eje_Y_rotado[2])
+	let ejeX4 = mult(matriz_total, vec4(eje_X_rotado[0],eje_X_rotado[1],eje_X_rotado[2],0))
+	let ejeY4 = mult(matriz_total, vec4(eje_Y_rotado[0],eje_Y_rotado[1],eje_Y_rotado[2],0))
+	let ejeZ4 = mult(matriz_total, vec4(eje_Z_rotado[0],eje_Z_rotado[1],eje_Z_rotado[2],0))
+
+	yaw = 0;
+	pitch = 0;
+	roll = 0;
+    
+    eje_X_rotado = vec3(ejeX4[0],ejeX4[1],ejeX4[2])
+    eje_Y_rotado = vec3(ejeY4[0],ejeY4[1],ejeY4[2])
+    eje_Z_rotado = vec3(ejeZ4[0],ejeZ4[1],ejeZ4[2])
 }
 
 /**
@@ -439,51 +466,25 @@ function mover_camara() {
         eye[1] -= VEL_MOVIMIENTO * eje_X_rotado[1];
         eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
     }
+	if (teclas_pulsadas.girder == 1) {
+		roll += VEL_ROTACION
+    }
+	if (teclas_pulsadas.girizq == 1) {
+		roll -= VEL_ROTACION
+    }
+	if (teclas_pulsadas.lookder == 1) {
+		yaw += VEL_MIRAR
+    }
+	if (teclas_pulsadas.lookizq == 1) {
+		yaw -= VEL_MIRAR
+    }
+	if (teclas_pulsadas.lookup == 1) {
+		pitch += VEL_MIRAR
+    }
+	if (teclas_pulsadas.lookdown == 1) {
+		pitch -= VEL_MIRAR
+    }
 }
-
-function aplicar_roll() {
-    let angulo_roll = 2.0; // Ángulo en grados por cada pulsación
-    if (teclas_pulsadas.girder == 1) {
-		let eje = vec3(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2])
-        let matriz_roll = rotate(-angulo_roll, eje);
-		let aux = mult(matriz_roll, vec4(up[0], up[1], up[2], 0.0));
-        up = vec3(aux[0], aux[1], aux[2])
-    }
-    if (teclas_pulsadas.girizq == 1) {
-		let eje = vec3(target[0]-eye[0], target[1]-eye[1], target[2]-eye[2])
-        let matriz_roll = rotate(angulo_roll, eje);
-		let aux = mult(matriz_roll, vec4(up[0], up[1], up[2], 0.0));
-        up = vec3(aux[0], aux[1], aux[2])
-    }
-}
-
-// Variable para controlar el roll
-/*let roll = 0.0;
-const VEL_ROLL = 2.0; // Ajusta la velocidad de rotación
-
-let ejeX_rotado_roll = vec4(ejeX[0], ejeX[1], ejeX[2], 0.0);
-let ejeY_rotado_roll = vec4(ejeY[0], ejeY[1], ejeY[2], 0.0);
-
-function rotar_roll() {
-    let matriz_rot = rotate(roll, ejeZ); // Rotación sobre ejeZ
-
-    // Aplicar rotación sin modificar las constantes ejeX y ejeY
-    ejeX_rotado_roll = mult(matriz_rot, vec4(ejeX[0], ejeX[1], ejeX[2], 0.0));
-    ejeY_rotado_roll = mult(matriz_rot, vec4(ejeY[0], ejeY[1], ejeY[2], 0.0));
-	console.log(ejeX_rotado_roll)
-}
-
-function girar_camara() {
-    if (teclas_pulsadas.girder == 1) {
-        roll += VEL_ROLL;
-        rotar_roll();
-    }
-    if (teclas_pulsadas.girizq == 1) {
-        roll -= VEL_ROLL;
-        rotar_roll();
-    }
-}*/
-
 
 //------------------------------------------------------------------------------
 // Rotacion de la camara
@@ -538,8 +539,16 @@ document.addEventListener("mousemove", (event) => {
 		lastY = event.clientY;
 		
 		// Calculo de yaw y pitch dados los offsets y sensibilidad
+		/*if (eje_Y_rotado[1] < 0) {
+			yaw -= offsetX * sensitivity;
+		}
+		if (eje_Y_rotado[1] >= 0) {
+			yaw += offsetX * sensitivity;
+		}*/
 		yaw += offsetX * sensitivity;
 		pitch -= offsetY * sensitivity;
+		//yaw = yaw % 360;
+		//pitch = pitch % 360;
     }
 });
 
@@ -628,9 +637,12 @@ function render() {
 
 	mover_camara();
 	nuevo_eje_movimiento();
-	//girar_camara();
 
-	// teleport
+	target = vec3(
+		eye[0]+eje_Z_rotado[0], 
+		eye[1]+eje_Z_rotado[1], 
+		eye[2]+eje_Z_rotado[2]);
+	up = vec3(eje_Y_rotado[0], eje_Y_rotado[1], eje_Y_rotado[2]);
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
