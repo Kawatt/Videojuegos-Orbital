@@ -48,10 +48,10 @@ const colorsAxes = [
 
 // NAVES ENEMIGAS
 const naveVerts = [
-	[ 0.0, 0.5, 0.0, 1], //0 punta delantera
-	[ 0.5,-0.5, 0.0, 1], //1
-	[-0.5,-0.5, 0.0, 1], //2
-	[ 0.0,-0.3, 0.3, 1], //3 ala
+	[ 0.0, 0.0,-0.5, 1], //0 punta delantera
+	[ 0.5, 0.0, 0.5, 1], //1
+	[-0.5, 0.0, 0.5, 1], //2
+	[ 0.0, 0.3, 0.3, 1], //3 ala
 ];
 
 const naveIndices = [	
@@ -232,6 +232,9 @@ var objectsToDraw = [
 var spheresToDraw = [
 ];
 
+
+// Creación de planetas
+
 var planetas = [
 ];
 
@@ -323,6 +326,23 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 //generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
 generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
+
+// Creación de Naves enemigas
+
+var naves = [];
+naves.push({
+	posicion: vec3(0.0,0.0,0.0),
+	velocidad: vec3(0.0,0.0,0.0),
+	velocidad_roll: vec3(0.0,0.0,0.0),
+	velocidad_yaw: vec3(0.0,0.0,0.0),
+	velocidad_pitch: vec3(0.0,0.0,0.0),
+
+	rot_roll: 0,
+	rot_yaw: 0,
+	rot_pitch: 0,
+
+	target: vec3(0.0,0.0,0.0),
+});
 
 //------------------------------------------------------------------------------
 // Nave jugador
