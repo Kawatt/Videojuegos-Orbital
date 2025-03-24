@@ -8,15 +8,21 @@
 // Variable to store the WebGL rendering context
 var gl;
 
-//----------------------------------------------------------------------------
-// MODEL DATA 
-//----------------------------------------------------------------------------
-
+// CONSTANTES
 const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.1 * ESCALA;
 const VEL_MIRAR = 12 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
+const ejeX = vec3(1.0, 0.0, 0.0);
+const ejeY = vec3(0.0, 1.0, 0.0);
+const ejeZ = vec3(0.0, 0.0, 1.0);
+
+//----------------------------------------------------------------------------
+// MODEL DATA 
+//----------------------------------------------------------------------------
+
+// AXIS
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
 pointsAxes.push([-2.0, 0.0, 0.0, 1.0]);
@@ -40,48 +46,36 @@ const colorsAxes = [
 	blue, blue,   //z
 ];		
 
-//----------------------------------------------------------------------------
-// OTHER DATA 
-//----------------------------------------------------------------------------
-
-var model = new mat4();   		// create a model matrix and set it to the identity matrix
-var view = new mat4();   		// create a view matrix and set it to the identity matrix
-var projection = new mat4();	// create a projection matrix and set it to the identity matrix
-
-var eye, target, up;			// for view matrix
-
-var rotAngle = 0.0;
-var rotChange = 0.5;
-
-var program;
-var uLocations = {};
-var aLocations = {};
-
-var programInfo = {
-			program,
-			uniformLocations: {},
-			attribLocations: {},
-};
-
-var objectsToDraw = [
-	/*{
-		programInfo: programInfo,
-		pointsArray: pointsAxes, 
-		colorsArray: colorsAxes, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: new mat4(),
-		},
-		primType: "lines",
-	},*/
-];
-var spheresToDraw = [
+// NAVES ENEMIGAS
+const naveVerts = [
+	[ 0.0, 0.5, 0.0, 1], //0 punta delantera
+	[ 0.5,-0.5, 0.0, 1], //1
+	[-0.5,-0.5, 0.0, 1], //2
+	[ 0.0,-0.3, 0.3, 1], //3 ala
 ];
 
-const ejeX = vec3(1.0, 0.0, 0.0);
-const ejeY = vec3(0.0, 1.0, 0.0);
-const ejeZ = vec3(0.0, 0.0, 1.0);
+const naveIndices = [	
+	//Solid Cube - use TRIANGLES
+	0,1,2,
+	0,1,3,
+	0,2,3,
+	1,2,3,
+];
 
+const pointsNave = [];
+for (let i=0; i < naveIndices.length; i++)
+{
+	pointsNave.push(naveVerts[naveIndices[i]]);
+}
+
+let colorsNave = [	
+	red, red, red, 
+	red, red, lightred,
+	red, red, lightred, 
+	red, red, lightred,
+]
+
+// PLANETAS
 function generateIcosahedronSphere(subdivisions) {
     const t = (1.0 + Math.sqrt(5.0)) / 2.0;
 
@@ -190,6 +184,54 @@ function arrayColorPlanet() {
 }
 var colorsArrayPlanet = arrayColorPlanet()
 
+//----------------------------------------------------------------------------
+// OTHER DATA 
+//----------------------------------------------------------------------------
+
+var model = new mat4();   		// create a model matrix and set it to the identity matrix
+var view = new mat4();   		// create a view matrix and set it to the identity matrix
+var projection = new mat4();	// create a projection matrix and set it to the identity matrix
+
+var eye, target, up;			// for view matrix
+
+var rotAngle = 0.0;
+var rotChange = 0.5;
+
+var program;
+var uLocations = {};
+var aLocations = {};
+
+var programInfo = {
+			program,
+			uniformLocations: {},
+			attribLocations: {},
+};
+
+var objectsToDraw = [
+	/*{ // AXIS
+		programInfo: programInfo,
+		pointsArray: pointsAxes, 
+		colorsArray: colorsAxes, 
+		uniforms: {
+		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+		  u_model: new mat4(),
+		},
+		primType: "lines",
+	},*/
+	{ // NAVE ENEMIGA
+		programInfo: programInfo,
+		pointsArray: pointsNave, 
+		colorsArray: colorsNave, 
+		uniforms: {
+		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+		  u_model: new mat4(),
+		},
+		primType: "triangles",
+	},
+];
+var spheresToDraw = [
+];
+
 var planetas = [
 ];
 
@@ -278,7 +320,7 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 }
 
 // Sol central
-generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
+//generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
 generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
 
