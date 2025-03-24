@@ -15,8 +15,8 @@ var gl;
 //----------------------------------------------------------------------------
 
 const VEL_MOVIMIENTO = 0.1;
-const VEL_ROTACION = 0.3;
-const VEL_MIRAR = 1.0;
+const VEL_ROTACION = 0.4;
+const VEL_MIRAR = 1.2;
 
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
@@ -172,46 +172,44 @@ function normalize_new(v) {
 // Generar esfera con 3 subdivisiones (más alto -> más detallado)
 const { pointsArray, colorsArray } = generateIcosahedronSphere(3);
 
-spheresToDraw.push({
-    programInfo: programInfo,
-    pointsArray: pointsArray,
-    colorsArray: colorsArray,
-    uniforms: {
-        u_colorMult: [1.0, 1.0, 1.0, 1.0],
-        u_model: new mat4(),
-    },
-    primType: "triangles",
-});
-
-spheresToDraw.push({
-    programInfo: programInfo,
-    pointsArray: pointsArray,
-    colorsArray: colorsArray,
-    uniforms: {
-        u_colorMult: [1.0, 1.0, 1.0, 1.0],
-        u_model: new mat4(),
-    },
-    primType: "triangles",
-});
-
 var planetas = [
 ];
 
-// Ejes asegurando que ejeRot != ejeOrb, ejeRot != ejeInc
-// ejOrb: Eje sobre el que se desplaza el objeto para ponerlo en orbita
-// ejRot: Eje de rotacion la Orbita
-// ejInc: Eje que se va a rotar para obtener el eje de inclinacion
-function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc){
+/**
+ * Crea un planeta.
+ * 
+ * ⚠️ **Restricción:** El eje `ejRot` **no puede ser igual** al eje `ejOrb` o `ejInc`.
+ * 
+ * @param {float} radioPlaneta - Tamaño del planeta.
+ * @param {float} velRotX - Velocidad de rotación en su eje X.
+ * @param {float} velRotY - Velocidad de rotación en su eje Y.
+ * @param {float} velRotZ - Velocidad de rotación en su eje Z.
+ * @param {float} radioOrbita - Distancia al centro del sistema.
+ * @param {float} velOrbita - Velocidad de rotación alrededor del centro del sistema.
+ * @param {eje} ejOrb - Eje a traves del cual se traslada el planeta para colocarlo en la orbita.
+ * @param {eje} ejRot - Eje de rotacion de la orbita
+ * @param {eje} ejInc - Eje que se va a rotar para obtener el eje de inclinacion
+ * @param {float} incOrb - Inclinacion del eje sobre el que orbita
+ * @param {float} incOrb2 - Inclinacion extra de la orbita
+ */
+function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, 
+	velOrbita, ejOrb, ejRot, ejInc, incOrb, incOrb2){
+	if (ejRot === ejOrb) {
+		throw new Error('⚠️ Los ejes ejRot y ejOrb no pueden ser iguales.');
+	}
+	if (ejRot === ejInc) {
+		throw new Error('⚠️ Los ejes ejRot y ejInc no pueden ser iguales.');
+	}
 
 	// Inclinacion de la orbita
-	let RInc = rotate(Math.random()*360, ejOrb);			
+	let RInc = rotate(incOrb, ejOrb);			
 	let ejeInclinacionRotado =
 		mult(RInc, vec4(ejInc[0], ejInc[1], ejInc[2], 0.0))
 	;
 
 	let M_Rot_Inclinacion = 
 		rotate(
-			Math.floor(Math.random()*180), // Inclinacion de la orbita
+			Math.floor(incOrb2), // Inclinacion de la orbita
 			vec3(
 				ejeInclinacionRotado[0],
 				ejeInclinacionRotado[1],
@@ -248,19 +246,27 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, v
 		Matriz_Traslacion_R_Orbita: M_Tras_R_Orb,
 		Matriz_Escalado: M_Escalado
 	});
+
+	spheresToDraw.push({
+		programInfo: programInfo,
+		pointsArray: pointsArray,
+		colorsArray: colorsArray,
+		uniforms: {
+			u_colorMult: [1.0, 1.0, 1.0, 1.0],
+			u_model: new mat4(),
+		},
+		primType: "triangles",
+	});
 }
 
 //radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc
-generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX);
-generar_planeta(1, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeY, ejeX);
+generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180);
+generar_planeta(1, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0);
 
 
 //------------------------------------------------------------------------------
 // Movimiento de la camara
 //------------------------------------------------------------------------------
-
-var es_perspectiva = true; 	// Variable para determinar la vista activa
-var field = 45.0;			// Variable campo de vista
 
 // 1 si esta siendo pulsada, 0 si ha sido soltada
 var teclas_pulsadas = {
@@ -279,10 +285,7 @@ var teclas_pulsadas = {
 };
 
 /**
- * Maneja las pulsaciones de teclas para controlar la cámara y la proyección.
- * - Activa las direcciones de movimiento con las flechas.
- * - Alterna entre proyección en perspectiva ('P') y ortográfica ('O').
- * - Modifica el campo de visión con '+' y '-'.
+ * Maneja la pulsación de teclas.
  */
 function keyPressedHandler(event) {
     switch(event.key) {
@@ -339,7 +342,7 @@ function keyPressedHandler(event) {
 }
 
 /**
- * Maneja la liberación de teclas para detener el movimiento o ajustes.
+ * Maneja la liberación de teclas.
  */
 function keyReleasedHandler(event) {
     switch(event.key) {
@@ -395,17 +398,15 @@ function keyReleasedHandler(event) {
 }
 
 // Movimiento y rotación
-var forward = vec3(0.0,0.0,-1.0)
-
 eye = vec3(0.0,0.0,-3.0)
-target = eye + forward
+target = eye + vec3(0.0,0.0,-1.0)
 
 var eje_X_rotado = vec3(ejeX[0], ejeX[1], ejeX[2]);
 var eje_Y_rotado = vec3(ejeY[0], ejeY[1], ejeY[2]);
 var eje_Z_rotado = vec3(ejeZ[0], ejeZ[1], ejeZ[2]);
 
 /**
- * Calcula las componentes a tener en cuenta en el movimiento dado el yaw
+ * Calcula los ejes sobre los que se mueve y gira la cámara.
  */
 function nuevo_eje_movimiento() {
 
@@ -413,9 +414,7 @@ function nuevo_eje_movimiento() {
     let matriz_rot_pitch = rotate(pitch, eje_X_rotado);
     let matriz_rot_roll = rotate(roll, eje_Z_rotado);
 
-	let matriz_total = mult(matriz_rot_pitch, mult(matriz_rot_yaw, matriz_rot_roll));
-    
-    //let matriz_rot = mult(matriz_rot_yaw, matriz_rot_pitch);
+	let matriz_total = mult(matriz_rot_roll, mult(matriz_rot_yaw, matriz_rot_pitch));
 
 	let ejeX4 = mult(matriz_total, vec4(eje_X_rotado[0],eje_X_rotado[1],eje_X_rotado[2],0))
 	let ejeY4 = mult(matriz_total, vec4(eje_Y_rotado[0],eje_Y_rotado[1],eje_Y_rotado[2],0))
@@ -425,15 +424,14 @@ function nuevo_eje_movimiento() {
 	pitch = 0;
 	roll = 0;
     
-    eje_X_rotado = vec3(ejeX4[0],ejeX4[1],ejeX4[2])
-    eje_Y_rotado = vec3(ejeY4[0],ejeY4[1],ejeY4[2])
-    eje_Z_rotado = vec3(ejeZ4[0],ejeZ4[1],ejeZ4[2])
+    eje_X_rotado = normalize(vec3(ejeX4[0],ejeX4[1],ejeX4[2]))
+    eje_Y_rotado = normalize(vec3(ejeY4[0],ejeY4[1],ejeY4[2]))
+    eje_Z_rotado = normalize(vec3(ejeZ4[0],ejeZ4[1],ejeZ4[2]))
+
 }
 
 /**
- * Mueve la cámara en función de las teclas presionadas.
- * Modifica la posición de la cámara (eye) y el objetivo (target)
- * según la dirección de movimiento y la velocidad definida.
+ * Mueve o gira la cámara en función de las teclas presionadas.
  */
 function mover_camara() {
 	if (teclas_pulsadas.delante == 1) {
@@ -495,7 +493,7 @@ const sensitivity = 0.1;  // Sensibilidad del raton (mayor sensibilidad = mayor 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
 let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
-let yaw = 0.0;        // Ángulo de yaw (rotacion sobre eje Y)
+let yaw = 0.0;          // Ángulo de yaw (rotacion sobre eje Y)
 let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
@@ -539,16 +537,8 @@ document.addEventListener("mousemove", (event) => {
 		lastY = event.clientY;
 		
 		// Calculo de yaw y pitch dados los offsets y sensibilidad
-		/*if (eje_Y_rotado[1] < 0) {
-			yaw -= offsetX * sensitivity;
-		}
-		if (eje_Y_rotado[1] >= 0) {
-			yaw += offsetX * sensitivity;
-		}*/
 		yaw += offsetX * sensitivity;
 		pitch -= offsetY * sensitivity;
-		//yaw = yaw % 360;
-		//pitch = pitch % 360;
     }
 });
 
@@ -604,7 +594,7 @@ window.onload = function init() {
 	view = lookAt(eye,target,up);
 
 	// Establecer la proyeccion perspectiva por defecto
-	projection = perspective(field, canvas.width/canvas.height, 0.1, 100.0 );
+	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 100.0 );
 
 	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
@@ -613,13 +603,9 @@ window.onload = function init() {
 
 	window.addEventListener("keydown", keyPressedHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
-	//window.addEventListener('mousemove', handleMouseMove);
 
 	canvas.addEventListener("mouseenter", () => mouseInside = true);
 	canvas.addEventListener("mouseleave", () => mouseInside = false);
-
-	// Escuchar clic en el canvas para activar Pointer Lock
-	//canvas.addEventListener("click", requestPointerLock);
   
 };
 
@@ -630,10 +616,6 @@ window.onload = function init() {
 function render() {
 
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
-	
-	//----------------------------------------------------------------------------
-	// MOVE STUFF AROUND
-	//----------------------------------------------------------------------------
 
 	mover_camara();
 	nuevo_eje_movimiento();
