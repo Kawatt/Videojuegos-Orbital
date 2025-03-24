@@ -474,17 +474,24 @@ function nuevo_eje_movimiento() {
 
 }
 
-function reduceToZero(vec) {
-    const epsilon = 0.0001;  // Umbral para considerar que el valor es suficientemente cercano a 0
-    for (let i = 0; i < vec.length; i++) {
-        if (Math.abs(vec[i]) < epsilon) {
-            vec[i] = 0;  // Si el valor está cerca de 0, se pone directamente en 0
-        } else {
-            // Reducir el valor de forma gradual hacia 0
-            vec[i] *= 0.99;  // Reduce el valor un 1% por cada paso
-        }
-    }
-    return vec;
+function aplicarFuerzaOpuesta(dt, velocidad) {
+    // Calcula la magnitud actual de la velocidad
+    const magnitud = length(velocidad);
+
+    // Si la magnitud es casi cero, considera que ya se ha detenido
+    if (magnitud < 1e-5) return vec3(0.0,0.0,0.0);
+
+    // Calcula la fuerza opuesta con la velocidad deseada
+    const factorReduccion = VEL_MOVIMIENTO * dt / magnitud;
+
+    // Asegura que no se invierta la dirección al llegar a 0
+    const factorAplicado = Math.min(factorReduccion, 1);
+
+    return vec3(
+		velocidad[0] - velocidad[0] * factorAplicado,
+        velocidad[1] - velocidad[1] * factorAplicado,
+        velocidad[2] - velocidad[2] * factorAplicado
+	);
 }
 
 /**
@@ -492,7 +499,7 @@ function reduceToZero(vec) {
  */
 function mover_camara(dt) {
 	if (teclas_pulsadas.parar == 1) {
-        jugador.velocity = reduceToZero(jugador.velocity);
+        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity);
     }
 	if (teclas_pulsadas.girder == 1) {
 		roll -= VEL_ROTACION
