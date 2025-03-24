@@ -1,9 +1,7 @@
 /*
 * 
-* Practica_02_base.js
-* Videojuegos (30262) - Curso 2019-2020
-* 
-* Parte adaptada de: Alex Clarke, 2016, y Ed Angel, 2015.
+* juego_3D.js
+* Videojuegos (30262) - Curso 2024-2025
 * 
 */
 
@@ -17,7 +15,7 @@ var gl;
 const VEL_MOVIMIENTO = 0.1;
 const VEL_ROTACION = 0.4;
 const VEL_MIRAR = 1.2;
-const SENSITIVITY = 0.05;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
+const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
 const pointsAxes = [];
 pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
@@ -260,13 +258,26 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 	});
 }
 
-//radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, velOrbita, ejOrb, ejRot, ejInc
+// Sol central
 generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180);
+// Planeta que orbita
 generar_planeta(1, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0);
 
+//------------------------------------------------------------------------------
+// Nave jugador
+//------------------------------------------------------------------------------
+
+var jugador = {
+	position: vec3(0.0, 0.0, -3.0),
+	velocity: vec3(0.0, 0.0, 0.0),
+	acceleration: vec3(0.0, 0.0, 0.0),
+	angular_velocity: vec3(0.0, 0.0, 0.0),
+	rotation: vec3(0.0, 0.0, 0.0),
+	diameter: 1.5,
+}
 
 //------------------------------------------------------------------------------
-// Movimiento de la camara
+// Controles
 //------------------------------------------------------------------------------
 
 // 1 si esta siendo pulsada, 0 si ha sido soltada
@@ -398,10 +409,7 @@ function keyReleasedHandler(event) {
 	}
 }
 
-// Movimiento y rotación
-eye = vec3(0.0,0.0,-3.0)
-target = eye + vec3(0.0,0.0,-1.0)
-
+// Ejes de movimiento y rotación
 var eje_X_rotado = vec3(ejeX[0], ejeX[1], ejeX[2]);
 var eje_Y_rotado = vec3(ejeY[0], ejeY[1], ejeY[2]);
 var eje_Z_rotado = vec3(ejeZ[0], ejeZ[1], ejeZ[2]);
@@ -466,10 +474,10 @@ function mover_camara() {
         eye[2] -= VEL_MOVIMIENTO * eje_X_rotado[2];
     }
 	if (teclas_pulsadas.girder == 1) {
-		roll += VEL_ROTACION
+		roll -= VEL_ROTACION
     }
 	if (teclas_pulsadas.girizq == 1) {
-		roll -= VEL_ROTACION
+		roll += VEL_ROTACION
     }
 	if (teclas_pulsadas.lookder == 1) {
 		yaw += VEL_MIRAR
@@ -521,9 +529,10 @@ document.addEventListener("mouseup", function(event) {
 
 
 /**
- * Maneja el evento de movimiento del ratón para actualizar los ángulos de la cámara.
- * Solo se ejecuta si el botón del ratón está presionado. Calcula el desplazamiento 
- * del cursor y ajusta los valores de yaw y pitch según la sensibilidad configurada.
+ * Maneja el evento de movimiento del ratón para actualizar los ángulos de la 
+ * cámara. Solo se ejecuta si el botón del ratón está presionado. Calcula el 
+ * desplazamiento del cursor y ajusta los valores de yaw y pitch según la 
+ * sensibilidad configurada.
  */
 document.addEventListener("mousemove", (event) => {
 	// Comprobar que el boton esta pulsado
@@ -588,7 +597,7 @@ window.onload = function init() {
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	// Set up camera	
-	eye = vec3(0.0, 0.0, -3.0);
+	eye = new vec3(jugador.position[0],jugador.position[1],jugador.position[2]);
 	target =  vec3(0.0, 0.0, 0.0);
 	up =  vec3(0.0, 1.0, 0.0);
 	view = lookAt(eye,target,up);
@@ -599,21 +608,54 @@ window.onload = function init() {
 	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 	
-	requestAnimFrame(render);
-
 	window.addEventListener("keydown", keyPressedHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
-
+	
 	canvas.addEventListener("mouseenter", () => mouseInside = true);
 	canvas.addEventListener("mouseleave", () => mouseInside = false);
-  
+	
+	lastTick = Date.now();
+	requestAnimFrame(tick);
 };
+
+//----------------------------------------------------------------------------
+// Tick Event Function
+//----------------------------------------------------------------------------
+
+var lastTick;
+
+function tick(nowish) {
+	var now = Date.now();
+
+    var dt = now - lastTick;
+    lastTick = now;
+
+	update(dt)
+	render(dt)
+
+	window.requestAnimationFrame(tick)
+}
+
+//----------------------------------------------------------------------------
+// Update Event Function
+//----------------------------------------------------------------------------
+
+/**
+ * Actualiza el estado de la simulación
+ * 
+ * @param {number} dt - Delta de tiempo transcurrido desde la última
+ * actualización.
+ * 
+ */
+function update(dt) {
+	jugador.position = add(jugador.position, mult(dt, jugador.velocity))
+}
 
 //----------------------------------------------------------------------------
 // Rendering Event Function
 //----------------------------------------------------------------------------
 
-function render() {
+function render(dt) {
 
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
@@ -716,7 +758,6 @@ function render() {
 		planetas[i].posRotYMismo += planetas[i].velRotYMismo
 		planetas[i].posRotZMismo += planetas[i].velRotZMismo
 	}
-	requestAnimationFrame(render);
 	
 }
 
