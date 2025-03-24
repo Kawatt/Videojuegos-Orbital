@@ -1,2 +1,2 @@
-# Videojuegos-P2
- Practica de 3D de la asignatura de videojuegos
+# Videojuegos-Trabajo
+ Trabajo 3D para la asignatura de Videojuegos
