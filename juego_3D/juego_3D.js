@@ -11,7 +11,7 @@ var gl;
 // CONSTANTES
 const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.1 * ESCALA;
-const VEL_MIRAR = 12 * ESCALA;
+const VEL_GIRAR = 8 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 
 const ejeX = vec3(1.0, 0.0, 0.0);
@@ -48,10 +48,10 @@ const colorsAxes = [
 
 // NAVES ENEMIGAS
 const naveVerts = [
-	[ 0.0, 0.0,-0.5, 1], //0 punta delantera
-	[ 0.5, 0.0, 0.5, 1], //1
-	[-0.5, 0.0, 0.5, 1], //2
-	[ 0.0, 0.3, 0.3, 1], //3 ala
+	[ 0.0, 0.0, 0.5, 1], //0 punta delantera
+	[ 0.5, 0.0,-0.5, 1], //1
+	[-0.5, 0.0,-0.5, 1], //2
+	[ 0.0, 0.3,-0.3, 1], //3 ala
 ];
 
 const naveIndices = [	
@@ -147,10 +147,6 @@ function generateIcosahedronSphere(subdivisions) {
     return { pointsArray };
 }
 
-function sphere_color() {
-	return Math.max(Math.random(), 0.8);
-}
-
 // Normalización de vectores
 function normalize_new(v) {
     let len = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
@@ -207,6 +203,10 @@ var programInfo = {
 			attribLocations: {},
 };
 
+//----------------------------------------------------------------------------
+// OBJECTS TO DRAW 
+//----------------------------------------------------------------------------
+
 var objectsToDraw = [
 	/*{ // AXIS
 		programInfo: programInfo,
@@ -218,18 +218,10 @@ var objectsToDraw = [
 		},
 		primType: "lines",
 	},*/
-	{ // NAVE ENEMIGA
-		programInfo: programInfo,
-		pointsArray: pointsNave, 
-		colorsArray: colorsNave, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: new mat4(),
-		},
-		primType: "triangles",
-	},
 ];
 var spheresToDraw = [
+];
+var navesToDraw = [
 ];
 
 
@@ -323,26 +315,44 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 }
 
 // Sol central
-//generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
+generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
 generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
 
 // Creación de Naves enemigas
 
 var naves = [];
-naves.push({
-	posicion: vec3(0.0,0.0,0.0),
-	velocidad: vec3(0.0,0.0,0.0),
-	velocidad_roll: vec3(0.0,0.0,0.0),
-	velocidad_yaw: vec3(0.0,0.0,0.0),
-	velocidad_pitch: vec3(0.0,0.0,0.0),
+function createNaveEnemiga() {
+	naves.push({
+		posicion: vec3(0.0,0.0,0.0),
+		velocidad: vec3(0.0,0.0,0.0),
+		velocidad_roll: vec3(0.0,0.0,0.0),
+		velocidad_yaw: vec3(0.0,0.0,0.0),
+		velocidad_pitch: vec3(0.0,0.0,0.0),
+	
+		rot_roll: 0,
+		rot_yaw: 0,
+		rot_pitch: 0,
+		eje_X_rot: vec3(1.0,0.0,0.0),
+		eje_Y_rot: vec3(0.0,1.0,0.0),
+		eje_Z_rot: vec3(0.0,0.0,1.0),
+	
+		target: vec3(0.0,0.0,0.0),
+	});
+	navesToDraw.push(
+		{
+			programInfo: programInfo,
+			pointsArray: pointsNave, 
+			colorsArray: colorsNave, 
+			uniforms: {
+			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+			  u_model: new mat4(),
+			},
+			primType: "triangles",
+		},
+	)
+}
 
-	rot_roll: 0,
-	rot_yaw: 0,
-	rot_pitch: 0,
-
-	target: vec3(0.0,0.0,0.0),
-});
 
 //------------------------------------------------------------------------------
 // Nave jugador
@@ -355,6 +365,14 @@ var jugador = {
 	yaw_velocity: 0.0,
 	pitch_velocity: 0.0,
 	roll_velocity: 0.0,
+
+	roll: 0,
+	yaw: 0,
+	pitch: 0,
+	eje_X_rot: vec3(1.0,0.0,0.0),
+	eje_Y_rot: vec3(0.0,1.0,0.0),
+	eje_Z_rot: vec3(0.0,0.0,1.0),
+
 	rotation: vec3(0.0, 0.0, 0.0),
 	diameter: 1.5,
 }
@@ -366,22 +384,22 @@ var jugador = {
 function calcular_gravedad() {
 	let gravedad = vec3(0.0,0.0,0.0);
 	if (teclas_pulsadas.delante == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, eje_Z_rotado);
+        gravedad = mult(VEL_MOVIMIENTO, jugador.eje_Z_rot);
     }
     if (teclas_pulsadas.atras == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, eje_Z_rotado);
+        gravedad = mult(-VEL_MOVIMIENTO, jugador.eje_Z_rot);
     }
 	if (teclas_pulsadas.arriba == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, eje_Y_rotado);
+        gravedad = mult(VEL_MOVIMIENTO, jugador.eje_Y_rot);
     }
     if (teclas_pulsadas.abajo == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, eje_Y_rotado);
+        gravedad = mult(-VEL_MOVIMIENTO, jugador.eje_Y_rot);
     }
     if (teclas_pulsadas.izquierda == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, eje_X_rotado);
+        gravedad = mult(VEL_MOVIMIENTO, jugador.eje_X_rot);
     }
     if (teclas_pulsadas.derecha == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, eje_X_rotado);
+        gravedad = mult(-VEL_MOVIMIENTO, jugador.eje_X_rot);
     }
 	return gravedad;
 }
@@ -390,7 +408,10 @@ function calcular_gravedad() {
 // Controles
 //------------------------------------------------------------------------------
 
-// 1 si esta siendo pulsada, 0 si ha sido soltada
+// 0 si ha sido soltada
+// 1 si esta siendo pulsada
+// 2 si se ha desabilitado la pulsación y es necesario volver a pulsar la tecla
+// (solo disponible en parar)
 var teclas_pulsadas = {
 	delante: 0,
 	atras: 0,
@@ -410,7 +431,7 @@ var teclas_pulsadas = {
 /**
  * Maneja la pulsación de teclas.
  */
-function keyPressedHandler(event) {
+function keyDownHandler(event) {
     switch(event.key) {
 		//case "ArrowUp":
 		case "w":
@@ -458,8 +479,9 @@ function keyPressedHandler(event) {
 		case "ArrowLeft":
 			teclas_pulsadas.lookizq = 1;
 			break;
-		case "Control":
-			teclas_pulsadas.parar = 1;
+		case "z":
+		case "Z":
+			if (teclas_pulsadas.parar == 0) teclas_pulsadas.parar = 1;
 			break;
 		default:
 			console.log("tecla pulsada: " + event.key)
@@ -518,7 +540,8 @@ function keyReleasedHandler(event) {
 		case "ArrowLeft":
 			teclas_pulsadas.lookizq = 0;
 			break;
-		case "Control":
+		case "z":
+		case "Z":
 			teclas_pulsadas.parar = 0;
 			break;
 		default:
@@ -526,54 +549,47 @@ function keyReleasedHandler(event) {
 	}
 }
 
-// Ejes de movimiento y rotación
-var eje_X_rotado = vec3(ejeX[0], ejeX[1], ejeX[2]);
-var eje_Y_rotado = vec3(ejeY[0], ejeY[1], ejeY[2]);
-var eje_Z_rotado = vec3(ejeZ[0], ejeZ[1], ejeZ[2]);
-
 /**
  * Calcula los ejes sobre los que se mueve y gira la cámara.
  */
-function nuevo_eje_movimiento() {
+function nuevo_eje_movimiento(nave) {
 
-	let matriz_rot_yaw = rotate(yaw, eje_Y_rotado);
-    let matriz_rot_pitch = rotate(pitch, eje_X_rotado);
-    let matriz_rot_roll = rotate(roll, eje_Z_rotado);
+	let matriz_rot_yaw = rotate(nave.yaw, nave.eje_Y_rot);
+    let matriz_rot_pitch = rotate(nave.pitch, nave.eje_X_rot);
+    let matriz_rot_roll = rotate(nave.roll, nave.eje_Z_rot);
 
 	let matriz_total = mult(matriz_rot_roll, mult(matriz_rot_yaw, matriz_rot_pitch));
 
-	let ejeX4 = mult(matriz_total, vec4(eje_X_rotado[0],eje_X_rotado[1],eje_X_rotado[2],0))
-	let ejeY4 = mult(matriz_total, vec4(eje_Y_rotado[0],eje_Y_rotado[1],eje_Y_rotado[2],0))
-	let ejeZ4 = mult(matriz_total, vec4(eje_Z_rotado[0],eje_Z_rotado[1],eje_Z_rotado[2],0))
+	let newEjeX = mult(matriz_total, vec4(nave.eje_X_rot[0],nave.eje_X_rot[1],nave.eje_X_rot[2],0))
+	let newEjeY = mult(matriz_total, vec4(nave.eje_Y_rot[0],nave.eje_Y_rot[1],nave.eje_Y_rot[2],0))
+	let newEjeZ = mult(matriz_total, vec4(nave.eje_Z_rot[0],nave.eje_Z_rot[1],nave.eje_Z_rot[2],0))
 
-	yaw = 0;
-	pitch = 0;
-	roll = 0;
+	nave.yaw = 0;
+	nave.pitch = 0;
+	nave.roll = 0;
     
-    eje_X_rotado = normalize(vec3(ejeX4[0],ejeX4[1],ejeX4[2]))
-    eje_Y_rotado = normalize(vec3(ejeY4[0],ejeY4[1],ejeY4[2]))
-    eje_Z_rotado = normalize(vec3(ejeZ4[0],ejeZ4[1],ejeZ4[2]))
+    nave.eje_X_rot = normalize(vec3(newEjeX[0],newEjeX[1],newEjeX[2]))
+    nave.eje_Y_rot = normalize(vec3(newEjeY[0],newEjeY[1],newEjeY[2]))
+    nave.eje_Z_rot = normalize(vec3(newEjeZ[0],newEjeZ[1],newEjeZ[2]))
 
 }
 
-function aplicarFuerzaOpuesta(dt, velocidad) {
-    // Calcula la magnitud actual de la velocidad
-    const magnitud = length(velocidad);
+function aplicarFuerzaOpuesta(dt, velocidad, vel_objetivo) {
+	// Calcula el vector opuesto
+	const velOPuesta = subtract(vel_objetivo, velocidad);
 
-    // Si la magnitud es casi cero, considera que ya se ha detenido
-    if (magnitud < 1e-5) return vec3(0.0,0.0,0.0);
+	const distancia = length(velOPuesta);
 
-    // Calcula la fuerza opuesta con la velocidad deseada
-    const factorReduccion = VEL_MOVIMIENTO * dt / magnitud;
-
-    // Asegura que no se invierta la dirección al llegar a 0
-    const factorAplicado = Math.min(factorReduccion, 1);
-
-    return vec3(
-		velocidad[0] - velocidad[0] * factorAplicado,
-        velocidad[1] - velocidad[1] * factorAplicado,
-        velocidad[2] - velocidad[2] * factorAplicado
-	);
+    // Si la distancia es casi cero, considera que ya se ha detenido
+    if (distancia < 1e-5) {
+		console.log("Velocidad Ajustada");
+		teclas_pulsadas.parar = 2;
+		return vel_objetivo;
+	}
+	
+	const fuerzaOpuesta = mult(VEL_MOVIMIENTO * dt, normalize(velOPuesta));
+	
+    return add(velocidad, fuerzaOpuesta);
 }
 
 function reducirGiro(dt, valor) {
@@ -581,7 +597,7 @@ function reducirGiro(dt, valor) {
     if (Math.abs(valor) < 1e-5) return 0;
 
     // Asegura que no se invierta la dirección al llegar a 0
-    const factorAplicado = Math.min(VEL_MIRAR * dt, Math.abs(valor));
+    const factorAplicado = Math.min(VEL_GIRAR * dt, Math.abs(valor));
 
     // Reduce el valor hacia 0
     return valor - Math.sign(valor) * factorAplicado;
@@ -592,25 +608,25 @@ function reducirGiro(dt, valor) {
  */
 function mover_camara(dt) {
 	if (teclas_pulsadas.parar == 1) {
-        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity);
+        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, vec3(0,0,0));
     }
 	if (teclas_pulsadas.girder == 1) {
-		jugador.roll_velocity += -VEL_MIRAR * dt
+		jugador.roll_velocity += -VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.girizq == 1) {
-		jugador.roll_velocity += VEL_MIRAR * dt
+		jugador.roll_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookder == 1) {
-		jugador.yaw_velocity += VEL_MIRAR * dt
+		jugador.yaw_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookizq == 1) {
-		jugador.yaw_velocity += -VEL_MIRAR * dt
+		jugador.yaw_velocity += -VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookup == 1) {
-		jugador.pitch_velocity += VEL_MIRAR * dt
+		jugador.pitch_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookdown == 1) {
-		jugador.pitch_velocity += -VEL_MIRAR * dt
+		jugador.pitch_velocity += -VEL_GIRAR * dt
     }
 	if ((teclas_pulsadas.girder == 0) & (teclas_pulsadas.girizq == 0)) {
 		jugador.roll_velocity = reducirGiro(dt, jugador.roll_velocity)
@@ -630,9 +646,9 @@ function mover_camara(dt) {
 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
-let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
-let yaw = 0.0;          // Ángulo de yaw (rotacion sobre eje Y)
-let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
+//let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
+//let yaw = 0.0;          // Ángulo de yaw (rotacion sobre eje Y)
+//let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
 /**
@@ -738,7 +754,7 @@ window.onload = function init() {
 	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 	
-	window.addEventListener("keydown", keyPressedHandler);
+	window.addEventListener("keydown", keyDownHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
 	
 	//canvas.addEventListener("mouseenter", () => mouseInside = true);
@@ -779,12 +795,13 @@ function tick(nowish) {
  */
 function update(dt) {
 	mover_camara(dt);
+	jugador.yaw += jugador.yaw_velocity * dt;
+	jugador.pitch += jugador.pitch_velocity * dt;
+	jugador.roll += jugador.roll_velocity * dt;
+	nuevo_eje_movimiento(jugador);
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
-	eye = jugador.position;
-	yaw = jugador.yaw_velocity;
-	pitch = jugador.pitch_velocity;
-	roll = jugador.roll_velocity;
+
 	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
@@ -796,13 +813,12 @@ function render(dt) {
 
 	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
-	nuevo_eje_movimiento();
-
+	eye = jugador.position;
 	target = vec3(
-		eye[0]+eje_Z_rotado[0], 
-		eye[1]+eje_Z_rotado[1], 
-		eye[2]+eje_Z_rotado[2]);
-	up = vec3(eje_Y_rotado[0], eje_Y_rotado[1], eje_Y_rotado[2]);
+		eye[0]+jugador.eje_Z_rot[0], 
+		eye[1]+jugador.eje_Z_rot[1], 
+		eye[2]+jugador.eje_Z_rot[2]);
+	up = vec3(jugador.eje_Y_rot[0], jugador.eje_Y_rot[1], jugador.eje_Y_rot[2]);
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
