@@ -324,15 +324,18 @@ generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayP
 var naves = [];
 function createNaveEnemiga() {
 	naves.push({
-		position: vec3(0.0,0.0,0.0),
+		position: vec3(0.0,2.0,0.0),
 		velocity: vec3(0.0,0.0,0.0),
-		roll_velocity: vec3(0.0,0.0,0.0),
-		yaw_velocity: vec3(0.0,0.0,0.0),
-		pitch_velocity: vec3(0.0,0.0,0.0),
+		roll_velocity: 0.0,
+		yaw_velocity: 0.0,
+		pitch_velocity: 0.0,
 	
-		rot_yaw: 0,
-		rot_pitch: 0,
-		rot_roll: 0,
+		yaw: 0.0,
+		pitch: 0.0,
+		roll: 0.0,
+		rot_yaw: 0.0,
+		rot_pitch: 0.0,
+		rot_roll: 0.0,
 		eje_X_rot: vec3(1.0,0.0,0.0),
 		eje_Y_rot: vec3(0.0,1.0,0.0),
 		eje_Z_rot: vec3(0.0,0.0,1.0),
@@ -367,9 +370,9 @@ var jugador = {
 	pitch_velocity: 0.0,
 	roll_velocity: 0.0,
 
-	yaw: 0,
-	pitch: 0,
-	roll: 0,
+	yaw: 0.0,
+	pitch: 0.0,
+	roll: 0.0,
 	eje_X_rot: vec3(1.0,0.0,0.0),
 	eje_Y_rot: vec3(0.0,1.0,0.0),
 	eje_Z_rot: vec3(0.0,0.0,1.0),
@@ -651,9 +654,6 @@ function mover_camara(dt) {
 
 let lastX = 0;  		// Posición X del ratón anterior
 let lastY = 0;  		// Posición Y del ratón anterior
-//let pitch = 0.0;        // Ángulo de pitch (rotacion sobre eje X)
-//let yaw = 0.0;          // Ángulo de yaw (rotacion sobre eje Y)
-//let roll = 0.0;         // Ángulo de roll (rotacion sobre eje Z)
 let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 
 /**
@@ -799,19 +799,33 @@ function tick(nowish) {
  * 
  */
 function update(dt) {
+	// Calculo rotación del jugador
 	mover_camara(dt);
 	jugador.yaw += jugador.yaw_velocity * dt;
 	jugador.pitch += jugador.pitch_velocity * dt;
 	jugador.roll += jugador.roll_velocity * dt;
 	nuevo_eje_movimiento(jugador);
+	// Calculo movimiento del jugador
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
-		// Reset a origen
-		nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO, nave.eje_Z_rot));
-		nave.position = add(nave.position, mult(dt, nave.velocity));
+
+		nave.pitch_velocity = VEL_GIRAR * dt *10
+
+		nave.yaw = nave.yaw_velocity * dt;
+		nave.pitch = nave.pitch_velocity * dt;
+		nave.roll = nave.roll_velocity * dt;
+		nave.rot_yaw += nave.yaw;
+		nave.rot_pitch += nave.pitch;
+		nave.rot_roll += nave.roll;
+		console.log(nave.rot_pitch)
+		nuevo_eje_movimiento(nave);
+		
+		// Calculo movimiento de la nave
+		//nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO/2, nave.eje_Z_rot));
+		//nave.position = add(nave.position, mult(dt, nave.velocity));
 	}
 
 	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
@@ -848,6 +862,7 @@ function render(dt) {
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 
+	// Renderizado de planetas
 	for(let i=0; i < planetas.length; i++){
 		// Reset a origen
 		spheresToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
@@ -896,12 +911,28 @@ function render(dt) {
 		;
 	}
 
+	// Renderizado de naves
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
 		// Reset a origen
 		navesToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
 		// Mover a position
 		navesToDraw[i].uniforms.u_model = translate(nave.position[0], nave.position[1], nave.position[2]);
+
+		let RMZ = rotate(nave.rot_roll, ejeZ);
+		navesToDraw[i].uniforms.u_model =
+			mult(navesToDraw[i].uniforms.u_model, RMZ)
+		;
+
+		let RMY = rotate(nave.rot_yaw, ejeY);
+		navesToDraw[i].uniforms.u_model =
+			mult(navesToDraw[i].uniforms.u_model, RMY)
+		;
+
+		let RMX = rotate(nave.rot_pitch, ejeX);
+		navesToDraw[i].uniforms.u_model =
+			mult(navesToDraw[i].uniforms.u_model, RMX)
+		;
 	}
 	
 	//----------------------------------------------------------------------------
