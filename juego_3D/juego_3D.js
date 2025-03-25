@@ -69,10 +69,10 @@ for (let i=0; i < naveIndices.length; i++)
 }
 
 let colorsNave = [	
-	red, red, red, 
-	red, red, lightred,
-	red, red, lightred, 
-	red, red, lightred,
+	red, white, white, 
+	red, white, lightred,
+	red, white, lightred, 
+	white, white, lightred,
 ]
 
 // PLANETAS
@@ -324,19 +324,20 @@ generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayP
 var naves = [];
 function createNaveEnemiga() {
 	naves.push({
-		posicion: vec3(0.0,0.0,0.0),
-		velocidad: vec3(0.0,0.0,0.0),
-		velocidad_roll: vec3(0.0,0.0,0.0),
-		velocidad_yaw: vec3(0.0,0.0,0.0),
-		velocidad_pitch: vec3(0.0,0.0,0.0),
+		position: vec3(0.0,0.0,0.0),
+		velocity: vec3(0.0,0.0,0.0),
+		roll_velocity: vec3(0.0,0.0,0.0),
+		yaw_velocity: vec3(0.0,0.0,0.0),
+		pitch_velocity: vec3(0.0,0.0,0.0),
 	
-		rot_roll: 0,
 		rot_yaw: 0,
 		rot_pitch: 0,
+		rot_roll: 0,
 		eje_X_rot: vec3(1.0,0.0,0.0),
 		eje_Y_rot: vec3(0.0,1.0,0.0),
 		eje_Z_rot: vec3(0.0,0.0,1.0),
 	
+		strength: vec3(0.0,0.0,1.0),
 		target: vec3(0.0,0.0,0.0),
 	});
 	navesToDraw.push(
@@ -352,6 +353,7 @@ function createNaveEnemiga() {
 		},
 	)
 }
+createNaveEnemiga()
 
 
 //------------------------------------------------------------------------------
@@ -366,9 +368,9 @@ var jugador = {
 	pitch_velocity: 0.0,
 	roll_velocity: 0.0,
 
-	roll: 0,
 	yaw: 0,
 	pitch: 0,
+	roll: 0,
 	eje_X_rot: vec3(1.0,0.0,0.0),
 	eje_Y_rot: vec3(0.0,1.0,0.0),
 	eje_Z_rot: vec3(0.0,0.0,1.0),
@@ -403,6 +405,10 @@ function calcular_gravedad() {
     }
 	return gravedad;
 }
+
+//------------------------------------------------------------------------------
+// IA
+//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 // Controles
@@ -718,7 +724,7 @@ window.onload = function init() {
 
 	setPrimitive(objectsToDraw);
 	setPrimitive(spheresToDraw);
-
+	setPrimitive(navesToDraw);
 
 	// Set up a WebGL program
 	// Load shaders and initialize attribute buffers
@@ -802,12 +808,32 @@ function update(dt) {
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 
+	for(let i=0; i < naves.length; i++){
+		let nave = naves[i];
+		// Reset a origen
+		nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO, nave.strength));
+		nave.position = add(nave.position, mult(dt, nave.velocity));
+	}
+
 	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
 //----------------------------------------------------------------------------
 // Rendering Event Function
 //----------------------------------------------------------------------------
+
+function renderObject(object, adjust) {
+	gl.useProgram(object.programInfo.program);
+
+	// Setup buffers and attributes
+	setBuffersAndAttributes(object.programInfo, object.pointsArray, object.colorsArray);
+
+	// Set the uniforms
+	setUniforms(object.programInfo, object.uniforms);
+
+	// Draw
+	gl.drawArrays(object.primitive, 0, object.pointsArray.length / adjust);
+}
 
 function render(dt) {
 
@@ -870,37 +896,27 @@ function render(dt) {
 			mult(spheresToDraw[i].uniforms.u_model, planetas[i].Matriz_Escalado)
 		;
 	}
+
+	for(let i=0; i < naves.length; i++){
+		let nave = naves[i];
+		// Reset a origen
+		navesToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
+		// Mover a position
+		navesToDraw[i].uniforms.u_model = translate(nave.position[0], nave.position[1], nave.position[2]);
+	}
 	
 	//----------------------------------------------------------------------------
 	// DRAW
 	//----------------------------------------------------------------------------
 
 	objectsToDraw.forEach(function(object) {
-
-		gl.useProgram(object.programInfo.program);
-
-		// Setup buffers and attributes
-		setBuffersAndAttributes(object.programInfo, object.pointsArray, object.colorsArray);
-
-		// Set the uniforms
-		setUniforms(object.programInfo, object.uniforms);
-
-		// Draw
-		gl.drawArrays(object.primitive, 0, object.pointsArray.length);
+		renderObject(object, 1)
     });	
-
 	spheresToDraw.forEach(function(object) {
-
-		gl.useProgram(object.programInfo.program);
-
-		// Setup buffers and attributes
-		setBuffersAndAttributes(object.programInfo, object.pointsArray, object.colorsArray);
-
-		// Set the uniforms
-		setUniforms(object.programInfo, object.uniforms);
-
-		// Draw
-		gl.drawArrays(object.primitive, 0, object.pointsArray.length / 4);
+		renderObject(object, 4);
+    });	
+	navesToDraw.forEach(function(object) {
+		renderObject(object, 1);
     });	
     
 	rotAngle += rotChange;
