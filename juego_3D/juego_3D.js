@@ -337,7 +337,6 @@ function createNaveEnemiga() {
 		eje_Y_rot: vec3(0.0,1.0,0.0),
 		eje_Z_rot: vec3(0.0,0.0,1.0),
 	
-		strength: vec3(0.0,0.0,1.0),
 		target: vec3(0.0,0.0,0.0),
 	});
 	navesToDraw.push(
@@ -490,7 +489,7 @@ function keyDownHandler(event) {
 			if (teclas_pulsadas.parar == 0) teclas_pulsadas.parar = 1;
 			break;
 		default:
-			console.log("tecla pulsada: " + event.key)
+			console.log("UNHANDLED INPUT: " + event.key)
 			break;
 	}
 }
@@ -811,7 +810,7 @@ function update(dt) {
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
 		// Reset a origen
-		nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO, nave.strength));
+		nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO, nave.eje_Z_rot));
 		nave.position = add(nave.position, mult(dt, nave.velocity));
 	}
 
