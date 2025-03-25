@@ -1,5 +1,21 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        #ejemplo {
+          position: absolute;
+          z-index: 1; /* Superior al canvas */
+          top: 0;
+          left: 0;
+          color: aqua;
+        }
+      
+        #gl-canvas {
+          position: absolute;
+          z-index: -1; /* Debajo del div */
+          top: 0;
+          left: 0;
+        }
+      </style>
 <head>
     <title>Orbital</title>
 
@@ -40,8 +56,11 @@
 
 <body>
     <!-- El canvas, que permite renderizar con WebGL -->
+    
+    <div id="ejemplo" width="1024" height="512"> </div>
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
+
 </body>
 </html>

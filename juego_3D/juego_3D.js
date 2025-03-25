@@ -13,10 +13,13 @@ const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.1 * ESCALA;
 const VEL_GIRAR = 8 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
+const BALL_LIFETIME = 200;
 
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);
+
+var balls = [];
 
 //----------------------------------------------------------------------------
 // MODEL DATA 
@@ -69,11 +72,55 @@ for (let i=0; i < naveIndices.length; i++)
 }
 
 let colorsNave = [	
-	red, white, white, 
-	red, white, lightred,
-	red, white, lightred, 
-	white, white, lightred,
+	red, lightred, lightred, 
+	red, lightred, lightred,
+	red, lightred, lightred, 
+	white, white, white,
 ]
+
+// Disparos
+const dispVerts = [
+	[ 0.005, 0.005, 0.005, 1], //0
+	[ 0.005, 0.005,-0.005, 1], //1
+	[ 0.005,-0.005, 0.005, 1], //2
+	[ 0.005,-0.005,-0.005, 1], //3
+	[-0.005, 0.005, 0.005, 1], //4
+	[-0.005, 0.005,-0.005, 1], //5
+	[-0.005,-0.005, 0.005, 1], //6
+	[-0.005,-0.005,-0.005, 1], //7
+];
+
+const dispIndices = [	
+//Solid Cube - use TRIANGLES, starts at 0, 36 vertices
+	0,4,6, //front
+	0,6,2,
+	1,0,2, //right
+	1,2,3, 
+	5,1,3, //back
+	5,3,7,
+	4,5,7, //left
+	4,7,6,
+	4,0,1, //top
+	4,1,5,
+	6,7,3, //bottom
+	6,3,2,
+];
+
+const pointsDisp = [];
+for (let i=0; i < dispIndices.length; i++)
+{
+	pointsDisp.push(dispVerts[dispIndices[i]]);
+}
+
+const colorsDisp = [	
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+];	
+
 
 // PLANETAS
 function generateIcosahedronSphere(subdivisions) {
@@ -223,6 +270,8 @@ var spheresToDraw = [
 ];
 var navesToDraw = [
 ];
+var ballsToDraw = [
+];
 
 
 // Creación de planetas
@@ -357,7 +406,6 @@ function createNaveEnemiga() {
 }
 createNaveEnemiga()
 
-
 //------------------------------------------------------------------------------
 // Nave jugador
 //------------------------------------------------------------------------------
@@ -408,6 +456,37 @@ function calcular_gravedad() {
 	return gravedad;
 }
 
+/*function intersecta(punto, direccion, centro, radio) {
+	// Variables del origen y dirección
+    const [ox, oy, oz] = punto;
+    const [dx, dy, dz] = direccion;
+    const [cx, cy, cz] = centro;
+    
+    // Coeficientes de la ecuación cuadrática
+    const A = dx * dx + dy * dy + dz * dz;
+    const B = 2 * (dx * (ox - cx) + dy * (oy - cy) + dz * (oz - cz));
+    const C = (ox - cx) ** 2 + (oy - cy) ** 2 + (oz - cz) ** 2 - radio ** 2;
+    
+    // Discriminante
+    const discriminante = B * B - 4 * A * C;
+    
+    if (discriminante < 0) {
+        // No hay intersección
+        return null;
+    }
+    
+    // Soluciones
+    const t1 = (-B + Math.sqrt(discriminante)) / (2 * A);
+    const t2 = (-B - Math.sqrt(discriminante)) / (2 * A);
+    
+    // Puntos de intersección
+    const p1 = [ox + t1 * dx, oy + t1 * dy, oz + t1 * dz];
+    const p2 = [ox + t2 * dx, oy + t2 * dy, oz + t2 * dz];
+    
+    // Si hay dos soluciones, devuelve ambos puntos
+    return discriminante === 0;
+}*/
+
 //------------------------------------------------------------------------------
 // IA
 //------------------------------------------------------------------------------
@@ -434,6 +513,7 @@ var teclas_pulsadas = {
 	lookup: 0,
 	lookdown: 0,
 	parar: 0,
+	disparar: 0,
 };
 
 /**
@@ -490,6 +570,10 @@ function keyDownHandler(event) {
 		case "z":
 		case "Z":
 			if (teclas_pulsadas.parar == 0) teclas_pulsadas.parar = 1;
+			break;
+		case "f":
+		case "F":
+			teclas_pulsadas.disparar = 1;
 			break;
 		default:
 			console.log("UNHANDLED INPUT: " + event.key)
@@ -552,6 +636,10 @@ function keyReleasedHandler(event) {
 		case "Z":
 			teclas_pulsadas.parar = 0;
 			break;
+		case "f":
+		case "F":
+			teclas_pulsadas.disparar = 0;
+			break;
 		default:
 			break;
 	}
@@ -600,12 +688,12 @@ function aplicarFuerzaOpuesta(dt, velocidad, vel_objetivo) {
     return add(velocidad, fuerzaOpuesta);
 }
 
-function reducirGiro(dt, valor) {
+function reducirGiro(dt, factor, valor) {
     // Si el valor es casi cero, considera que ya se ha detenido
     if (Math.abs(valor) < 1e-5) return 0;
 
     // Asegura que no se invierta la dirección al llegar a 0
-    const factorAplicado = Math.min(VEL_GIRAR * dt, Math.abs(valor));
+    const factorAplicado = Math.min(factor * dt, Math.abs(valor));
 
     // Reduce el valor hacia 0
     return valor - Math.sign(valor) * factorAplicado;
@@ -637,14 +725,25 @@ function mover_camara(dt) {
 		jugador.pitch_velocity += -VEL_GIRAR * dt
     }
 	if ((teclas_pulsadas.girder == 0) & (teclas_pulsadas.girizq == 0)) {
-		jugador.roll_velocity = reducirGiro(dt, jugador.roll_velocity)
+		jugador.roll_velocity = reducirGiro(dt, VEL_GIRAR, jugador.roll_velocity)
     }
 	if ((teclas_pulsadas.lookder == 0) & (teclas_pulsadas.lookizq == 0)) {
-		jugador.yaw_velocity = reducirGiro(dt, jugador.yaw_velocity)
+		jugador.yaw_velocity = reducirGiro(dt, VEL_GIRAR, jugador.yaw_velocity)
     }
 	if ((teclas_pulsadas.lookup == 0) & (teclas_pulsadas.lookdown == 0)) {
-		jugador.pitch_velocity = reducirGiro(dt, jugador.pitch_velocity)
+		jugador.pitch_velocity = reducirGiro(dt, VEL_GIRAR, jugador.pitch_velocity)
     }
+
+	/*
+	if ((teclas_pulsadas.derecha == 0) & (teclas_pulsadas.izquierda == 0)) {
+		jugador.velocity[0] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[0])
+    }
+	if ((teclas_pulsadas.arriba == 0) & (teclas_pulsadas.abajo == 0)) {
+		jugador.velocity[1] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[1])
+    }
+	if ((teclas_pulsadas.delante == 0) & (teclas_pulsadas.atras == 0)) {
+		jugador.velocity[2] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[2])
+    }*/
 }
 
 //------------------------------------------------------------------------------
@@ -707,11 +806,14 @@ let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 //----------------------------------------------------------------------------
 
 var canvas;
+var div;
 
 window.onload = function init() {
 	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
+	div = document.getElementById("ejemplo");
+	div.textContent = "HOLAAAAAAAAAAAAAAAAAA";
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
 		alert("WebGL isn't available");
@@ -724,6 +826,7 @@ window.onload = function init() {
 	setPrimitive(objectsToDraw);
 	setPrimitive(spheresToDraw);
 	setPrimitive(navesToDraw);
+	setPrimitive(ballsToDraw);
 
 	// Set up a WebGL program
 	// Load shaders and initialize attribute buffers
@@ -791,6 +894,67 @@ function tick(nowish) {
 // Update Event Function
 //----------------------------------------------------------------------------
 
+var cooldown = 0;
+const MAX_COOLDOWN = 20;
+
+function spawn_disparo(position, direction, velocity) {
+	ballsToDraw.push(
+		{
+			programInfo: programInfo,
+			pointsArray: pointsDisp, 
+			colorsArray: colorsDisp, 
+			uniforms: {
+			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+			  u_model: translate(0,0,0),
+			},
+			primType: "triangles",
+		},
+	);
+	balls.push({
+		position: add(position, mult(0.05, direction)),
+		velocity: add(velocity, mult(VEL_MOVIMIENTO*1000, direction)),
+		direction: direction,
+		lifetime: BALL_LIFETIME,
+		index: 0,
+		model: ballsToDraw[ballsToDraw.length-1]
+	});
+}
+/**
+ * Elimina un objeto y su modelo asociado
+ * 
+ * @param {array} models - Array de modelos
+ * @param {array} objects - Array de objetos
+ * @param {number} i - Indice del objeto a eliminar
+ * 
+ */
+function remove_model_and_object(models, objects, i) {
+	const indice = models.indexOf(objects[i].model);
+
+	if (indice !== -1) {
+		models.splice(indice, 1);
+		objects.splice(i, 1);
+	}
+}
+function handle_disparos(dt) {
+	cooldown -= 1;
+	for(let i=0; i < balls.length; i++){
+		let ball = balls[i]
+		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
+		ball.position = add(ball.position, mult(dt, ball.velocity));
+		console.log(balls[i].position)
+		balls[i].lifetime -= 1;
+		if (balls[i].lifetime <= 0) {
+			remove_model_and_object(ballsToDraw, balls, i)
+		}
+	}
+	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
+		cooldown = MAX_COOLDOWN;
+		const lateral = mult(0.05, jugador.eje_X_rot);
+		spawn_disparo(add(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
+		spawn_disparo(subtract(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
+	}
+}
+
 /**
  * Actualiza el estado de la simulación
  * 
@@ -809,10 +973,14 @@ function update(dt) {
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad()));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 
+	handle_disparos(dt)
+
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
 
-		nave.pitch_velocity = VEL_GIRAR * dt *10
+		nave.yaw_velocity = VEL_GIRAR * dt * 10
+		nave.pitch_velocity = VEL_GIRAR * dt * 10
+		nave.roll_velocity = VEL_GIRAR * dt * 10
 
 		nave.yaw = nave.yaw_velocity * dt;
 		nave.pitch = nave.pitch_velocity * dt;
@@ -820,7 +988,6 @@ function update(dt) {
 		nave.rot_yaw += nave.yaw;
 		nave.rot_pitch += nave.pitch;
 		nave.rot_roll += nave.roll;
-		console.log(nave.rot_pitch)
 		nuevo_eje_movimiento(nave);
 		
 		// Calculo movimiento de la nave
@@ -934,6 +1101,11 @@ function render(dt) {
 			mult(navesToDraw[i].uniforms.u_model, RMX)
 		;
 	}
+
+	for(let i=0; i < balls.length; i++){
+		let ball = balls[i];
+		ballsToDraw[i].uniforms.u_model = translate(ball.position[0], ball.position[1], ball.position[2]);
+	}
 	
 	//----------------------------------------------------------------------------
 	// DRAW
@@ -946,6 +1118,10 @@ function render(dt) {
 		renderObject(object, 4);
     });	
 	navesToDraw.forEach(function(object) {
+		renderObject(object, 1);
+    });
+	setPrimitive(ballsToDraw);
+	ballsToDraw.forEach(function(object) {
 		renderObject(object, 1);
     });	
     
