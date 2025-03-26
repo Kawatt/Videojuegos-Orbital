@@ -12,8 +12,10 @@ var gl;
 const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.1 * ESCALA;
 const VEL_GIRAR = 8 * ESCALA;
+const MAX_VEL_GIRAR = 16000 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 const BALL_LIFETIME = 200;
+const SHOOTING_FORCE = 0.005;
 
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
@@ -707,22 +709,22 @@ function mover_camara(dt) {
         jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, vec3(0,0,0));
     }
 	if (teclas_pulsadas.girder == 1) {
-		jugador.roll_velocity += -VEL_GIRAR * dt
+		/*if (jugador.roll_velocity > -MAX_VEL_GIRAR)*/ jugador.roll_velocity += -VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.girizq == 1) {
-		jugador.roll_velocity += VEL_GIRAR * dt
+		/*if (jugador.roll_velocity < MAX_VEL_GIRAR)*/ jugador.roll_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookder == 1) {
-		jugador.yaw_velocity += VEL_GIRAR * dt
+		/*if (jugador.yaw_velocity < MAX_VEL_GIRAR)*/ jugador.yaw_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookizq == 1) {
-		jugador.yaw_velocity += -VEL_GIRAR * dt
+		/*if (jugador.yaw_velocity > -MAX_VEL_GIRAR)*/ jugador.yaw_velocity += -VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookup == 1) {
-		jugador.pitch_velocity += VEL_GIRAR * dt
+		/*if (jugador.pitch_velocity < MAX_VEL_GIRAR)*/ jugador.pitch_velocity += VEL_GIRAR * dt
     }
 	if (teclas_pulsadas.lookdown == 1) {
-		jugador.pitch_velocity += -VEL_GIRAR * dt
+		/*if (jugador.pitch_velocity > -MAX_VEL_GIRAR)*/ jugador.pitch_velocity += -VEL_GIRAR * dt
     }
 	if ((teclas_pulsadas.girder == 0) & (teclas_pulsadas.girizq == 0)) {
 		jugador.roll_velocity = reducirGiro(dt, VEL_GIRAR, jugador.roll_velocity)
@@ -806,14 +808,17 @@ let raton_pulsado = 0; 	// 1 si el ratón está pulsado, 0 si no
 //----------------------------------------------------------------------------
 
 var canvas;
-var div;
+var hud_distance_centerhud_distance_center;
+var hud_velocity_target;
+var hud_velocity;
 
 window.onload = function init() {
 	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
-	div = document.getElementById("ejemplo");
-	div.textContent = "HOLAAAAAAAAAAAAAAAAAA";
+	hud_distance_center = document.getElementById("hud_distance");
+	hud_velocity_target = document.getElementById("hud_velocity_target");
+	hud_velocity = document.getElementById("hud_velocity");
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
 		alert("WebGL isn't available");
@@ -912,7 +917,7 @@ function spawn_disparo(position, direction, velocity) {
 	);
 	balls.push({
 		position: add(position, mult(0.05, direction)),
-		velocity: add(velocity, mult(VEL_MOVIMIENTO*1000, direction)),
+		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
 		direction: direction,
 		lifetime: BALL_LIFETIME,
 		index: 0,
@@ -941,7 +946,6 @@ function handle_disparos(dt) {
 		let ball = balls[i]
 		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
 		ball.position = add(ball.position, mult(dt, ball.velocity));
-		console.log(balls[i].position)
 		balls[i].lifetime -= 1;
 		if (balls[i].lifetime <= 0) {
 			remove_model_and_object(ballsToDraw, balls, i)
@@ -953,6 +957,12 @@ function handle_disparos(dt) {
 		spawn_disparo(add(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
 		spawn_disparo(subtract(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
 	}
+}
+
+function update_hud() {
+	hud_distance_center.textContent = "Distancia al Sol: " + length(jugador.position).toFixed(4)
+	hud_velocity_target.textContent = "Velocidad hacia el Sol: " + (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4)
+	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
 /**
@@ -974,6 +984,10 @@ function update(dt) {
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 
 	handle_disparos(dt)
+	
+	update_hud()
+
+	//if (balls.length > 0) console.log(balls[0].velocity)
 
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];

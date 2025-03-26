@@ -1,17 +1,40 @@
 <!DOCTYPE html>
 <html>
     <style>
-        #ejemplo {
-          position: absolute;
-          z-index: 1; /* Superior al canvas */
+        #hud_distance {
+          z-index: 1;
           top: 0;
           left: 0;
           color: aqua;
+          font-size: x-large;
+        }
+        #hud_velocity_target {
+          z-index: 1;
+          top: 0;
+          left: 0;
+          color: aqua;
+          font-size: x-large;
+        }
+        #hud_velocity {
+          z-index: 1;
+          top: 0;
+          left: 0;
+          color: aqua;
+          font-size: x-large;
+          display: none;
+        }
+
+        #aim {
+          position: absolute;
+          z-index: 2s;
+          top: 100px;
+          left: 100px;
+          display: none;
         }
       
         #gl-canvas {
           position: absolute;
-          z-index: -1; /* Debajo del div */
+          z-index: -1;
           top: 0;
           left: 0;
         }
@@ -56,8 +79,10 @@
 
 <body>
     <!-- El canvas, que permite renderizar con WebGL -->
-    
-    <div id="ejemplo" width="1024" height="512"> </div>
+    <img id="aim" src="aim-aim-blue.png" width="256" height="256" />
+    <div id="hud_distance" width="1024" height="512"> </div>
+    <div id="hud_velocity_target" width="1024" height="512"> </div>
+    <div id="hud_velocity" width="1024" height="512"> </div>
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
