@@ -26,8 +26,14 @@ function calcular_gravedad(nave) {
         gravedad = mult(-VEL_MOVIMIENTO, nave.eje_X_rot);
     }
 	// calculo solo del sol
-	gravedad = add(gravedad, mult((VEL_MOVIMIENTO*0.2)/length(normalize(subtract(vec3(0,0,0), nave.position))), normalize(subtract(vec3(0,0,0), nave.position))))
+	//gravedad = add(gravedad, mult((VEL_MOVIMIENTO*0.1)/length(normalize(subtract(vec3(0,0,0), nave.position))), normalize(subtract(vec3(0,0,0), nave.position))))
 	return gravedad;
+}
+
+function colision_esferas(centro1, radio1, centro2, radio2){
+	let radiot = radio1 + radio2;
+	let distancia = length(subtract(centro1, centro2));
+	return distancia <= radiot;
 }
 
 /*function intersecta(punto, direccion, centro, radio) {
@@ -60,9 +66,3 @@ function calcular_gravedad(nave) {
     // Si hay dos soluciones, devuelve ambos puntos
     return discriminante === 0;
 }*/
-
-function colision_esferas(centro1, radio1, centro2, radio2){
-	let radiot = radio1 + radio2;
-	let distancia = length(subtract(centro1, centro2));
-	return distancia <= radiot;
-}

@@ -1,26 +1,11 @@
 /*
 * 
-* juego_3D_nave.js
+* juego_3D_jugador.js
 * Videojuegos (30262) - Curso 2024-2025
 * 
 */
 
-function reset_jugador() {
-	jugador.position = INITIAL_POSITION,
-	jugador.velocity = vec3(0.0, 0.0, 0.0),
-	jugador.yaw_velocity = 0.0,
-	jugador.pitch_velocity = 0.0,
-	jugador.roll_velocity = 0.0,
-
-	jugador.yaw = 0.0;
-	jugador.pitch = 0.0;
-	jugador.roll = 0.0;
-	jugador.eje_X_rot = vec3(1.0,0.0,0.0);
-	jugador.eje_Y_rot = vec3(0.0,1.0,0.0);
-	jugador.eje_Z_rot = vec3(0.0,0.0,1.0);
-
-	jugador.rotation = vec3(0.0, 0.0, 0.0);
-}
+var vuelo_sencillo = 0; // la nave ajusta constantemente la velocidad si es 1
 
 var jugador = {
 	position: INITIAL_POSITION,
@@ -39,6 +24,23 @@ var jugador = {
 
 	rotation: vec3(0.0, 0.0, 0.0),
 	diameter: 1.5,
+}
+
+function reset_jugador() {
+	jugador.position = INITIAL_POSITION,
+	jugador.velocity = vec3(0.0, 0.0, 0.0),
+	jugador.yaw_velocity = 0.0,
+	jugador.pitch_velocity = 0.0,
+	jugador.roll_velocity = 0.0,
+
+	jugador.yaw = 0.0;
+	jugador.pitch = 0.0;
+	jugador.roll = 0.0;
+	jugador.eje_X_rot = vec3(1.0,0.0,0.0);
+	jugador.eje_Y_rot = vec3(0.0,1.0,0.0);
+	jugador.eje_Z_rot = vec3(0.0,0.0,1.0);
+
+	jugador.rotation = vec3(0.0, 0.0, 0.0);
 }
 
 //------------------------------------------------------------------------------
@@ -259,22 +261,40 @@ function mover_camara(dt) {
         jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, vec3(0,0,0));
     }
 	if (teclas_pulsadas.girder == 1) {
-		/*if (jugador.roll_velocity > -MAX_VEL_GIRAR)*/ jugador.roll_velocity += -VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.roll_velocity += -VEL_GIRAR * dt;
+		}
+		else jugador.roll_velocity += -VEL_GIRAR * dt;
     }
 	if (teclas_pulsadas.girizq == 1) {
-		/*if (jugador.roll_velocity < MAX_VEL_GIRAR)*/ jugador.roll_velocity += VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.roll_velocity += VEL_GIRAR * dt;
+		}
+		else jugador.roll_velocity += VEL_GIRAR * dt;
     }
 	if (teclas_pulsadas.lookder == 1) {
-		/*if (jugador.yaw_velocity < MAX_VEL_GIRAR)*/ jugador.yaw_velocity += VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.yaw_velocity += VEL_GIRAR * dt;
+		}
+		else jugador.yaw_velocity += VEL_GIRAR * dt;
     }
 	if (teclas_pulsadas.lookizq == 1) {
-		/*if (jugador.yaw_velocity > -MAX_VEL_GIRAR)*/ jugador.yaw_velocity += -VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.yaw_velocity += -VEL_GIRAR * dt;
+		}
+		else jugador.yaw_velocity += -VEL_GIRAR * dt;
     }
 	if (teclas_pulsadas.lookup == 1) {
-		/*if (jugador.pitch_velocity < MAX_VEL_GIRAR)*/ jugador.pitch_velocity += VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.pitch_velocity += VEL_GIRAR * dt;
+		}
+		else jugador.pitch_velocity += VEL_GIRAR * dt;
     }
 	if (teclas_pulsadas.lookdown == 1) {
-		/*if (jugador.pitch_velocity > -MAX_VEL_GIRAR)*/ jugador.pitch_velocity += -VEL_GIRAR * dt
+		if (vuelo_sencillo == 1) {
+			if (jugador.roll_velocity > -MAX_VEL_GIRAR) jugador.pitch_velocity += -VEL_GIRAR * dt;
+		}
+		else jugador.pitch_velocity += -VEL_GIRAR * dt;
     }
 	if ((teclas_pulsadas.girder == 0) & (teclas_pulsadas.girizq == 0)) {
 		jugador.roll_velocity = reducirGiro(dt, VEL_GIRAR, jugador.roll_velocity)
@@ -286,14 +306,66 @@ function mover_camara(dt) {
 		jugador.pitch_velocity = reducirGiro(dt, VEL_GIRAR, jugador.pitch_velocity)
     }
 
-	/*
-	if ((teclas_pulsadas.derecha == 0) & (teclas_pulsadas.izquierda == 0)) {
-		jugador.velocity[0] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[0])
-    }
-	if ((teclas_pulsadas.arriba == 0) & (teclas_pulsadas.abajo == 0)) {
-		jugador.velocity[1] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[1])
-    }
-	if ((teclas_pulsadas.delante == 0) & (teclas_pulsadas.atras == 0)) {
-		jugador.velocity[2] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[2])
-    }*/
+	if (vuelo_sencillo == 1) {
+		if ((teclas_pulsadas.derecha == 0) & (teclas_pulsadas.izquierda == 0)) {
+			jugador.velocity[0] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[0])
+		}
+		if ((teclas_pulsadas.arriba == 0) & (teclas_pulsadas.abajo == 0)) {
+			jugador.velocity[1] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[1])
+		}
+		if ((teclas_pulsadas.delante == 0) & (teclas_pulsadas.atras == 0)) {
+			jugador.velocity[2] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[2])
+		}
+	}
+}
+
+// DISPAROS
+
+var cooldown = 0;
+
+var balls = [];
+
+function spawn_disparo(position, direction, velocity) {
+	let ball = {
+		programInfo: programInfo,
+		pointsArray: pointsDisp, 
+		colorsArray: colorsDisp, 
+		uniforms: {
+		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+		  u_model: translate(0,0,0),
+		},
+		primType: "triangles",
+	};
+	ballsToDraw.push(
+		ball,
+	);
+	balls.push({
+		position: add(position, mult(0.05, direction)),
+		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
+		direction: direction,
+		lifetime: BALL_LIFETIME,
+		index: 0,
+		model: ballsToDraw[ballsToDraw.length-1]
+	});
+	setOnePrimitive(ball);
+}
+
+
+function handle_disparos(dt, nave) {
+	cooldown -= 1;
+	for(let i=0; i < balls.length; i++){
+		let ball = balls[i]
+		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
+		ball.position = add(ball.position, mult(dt, ball.velocity));
+		balls[i].lifetime -= 1;
+		if (balls[i].lifetime <= 0) {
+			remove_model_and_object(ballsToDraw, balls, i)
+		}
+	}
+	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
+		cooldown = MAX_DISP_COOLDOWN;
+		const lateral = mult(0.05, nave.eje_X_rot);
+		spawn_disparo(add(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
+		spawn_disparo(subtract(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
+	}
 }

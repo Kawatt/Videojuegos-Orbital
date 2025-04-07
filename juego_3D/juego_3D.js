@@ -10,156 +10,67 @@ var gl;
 
 // CONSTANTES
 
-const ejeX = vec3(1.0, 0.0, 0.0);
-const ejeY = vec3(0.0, 1.0, 0.0);
-const ejeZ = vec3(0.0, 0.0, 1.0);
-
-var balls = [];
-
-//----------------------------------------------------------------------------
-// OTHER DATA 
-//----------------------------------------------------------------------------
-
-var model = new mat4();   		// create a model matrix and set it to the identity matrix
-var view = new mat4();   		// create a view matrix and set it to the identity matrix
-var projection = new mat4();	// create a projection matrix and set it to the identity matrix
-
-var eye, target, up;			// for view matrix
 
 var rotAngle = 0.0;
 var rotChange = 0.5;
 
-var program;
-var uLocations = {};
-var aLocations = {};
+/**
+ * Elimina un objeto y su modelo asociado
+ * 
+ * @param {array} models - Array de modelos
+ * @param {array} objects - Array de objetos
+ * @param {number} i - Indice del objeto a eliminar
+ * 
+ */
+function remove_model_and_object(models, objects, i) {
+	const indice = models.indexOf(objects[i].model);
 
-var programInfo = {
-			program,
-			uniformLocations: {},
-			attribLocations: {},
-};
+	if (indice !== -1) {
+		models.splice(indice, 1);
+		objects.splice(i, 1);
+	}
+}
+
+function update_hud() {
+	hud_distance_center.textContent = length(jugador.position).toFixed(4) + " m"
+	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4) + " m/s"
+	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
+}
+
+function start_hud() {
+	hud_distance_center = document.getElementById("hud_distance");
+	hud_velocity_target = document.getElementById("hud_velocity_target");
+	hud_velocity = document.getElementById("hud_velocity");
+	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
+	hud_ajustar_vel.textContent = "Velocidad Ajustada"
+	hud_ajustar_vel.style.display = 'none';
+}
+
+
+
+
 
 //----------------------------------------------------------------------------
 // OBJECTS TO DRAW 
 //----------------------------------------------------------------------------
 
-var objectsToDraw = [
-	/*{ // AXIS
-		programInfo: programInfo,
-		pointsArray: pointsAxes, 
-		colorsArray: colorsAxes, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: new mat4(),
-		},
-		primType: "lines",
-	},*/
-];
-var spheresToDraw = [
-];
-var navesToDraw = [
-];
-var ballsToDraw = [
-];
-
-
-// Creación de planetas
-
-var planetas = [
-];
-
-/**
- * Crea un planeta.
- * 
- * ⚠️ **Restricción:** El eje `ejRot` **no puede ser igual** al eje `ejOrb` o `ejInc`.
- * 
- * @param {float} radioPlaneta - Tamaño del planeta.
- * @param {float} velRotX - Velocidad de rotación en su eje X.
- * @param {float} velRotY - Velocidad de rotación en su eje Y.
- * @param {float} velRotZ - Velocidad de rotación en su eje Z.
- * @param {float} radioOrbita - Distancia al centro del sistema.
- * @param {float} velOrbita - Velocidad de rotación alrededor del centro del sistema.
- * @param {eje} ejOrb - Eje a traves del cual se traslada el planeta para colocarlo en la orbita.
- * @param {eje} ejRot - Eje de rotacion de la orbita
- * @param {eje} ejInc - Eje que se va a rotar para obtener el eje de inclinacion
- * @param {float} incOrb - Inclinacion del eje sobre el que orbita
- * @param {float} incOrb2 - Inclinacion extra de la orbita
- */
-function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, 
-	velOrbita, ejOrb, ejRot, ejInc, incOrb, incOrb2, arrayColor){
-	if (ejRot === ejOrb) {
-		throw new Error('⚠️ Los ejes ejRot y ejOrb no pueden ser iguales.');
-	}
-	if (ejRot === ejInc) {
-		throw new Error('⚠️ Los ejes ejRot y ejInc no pueden ser iguales.');
-	}
-
-	// Inclinacion de la orbita
-	let RInc = rotate(incOrb, ejOrb);			
-	let ejeInclinacionRotado =
-		mult(RInc, vec4(ejInc[0], ejInc[1], ejInc[2], 0.0))
-	;
-
-	let M_Rot_Inclinacion = 
-		rotate(
-			Math.floor(incOrb2), // Inclinacion de la orbita
-			vec3(
-				ejeInclinacionRotado[0],
-				ejeInclinacionRotado[1],
-				ejeInclinacionRotado[2]
-			)
-		)
-	;
-
-	// Traslación
-	M_Tras_R_Orb = translate(
-		ejOrb[0] * radioOrbita,
-		ejOrb[1] * radioOrbita,
-		ejOrb[2] * radioOrbita
-	);
-
-	// Escalado de tamaño
-	let M_Escalado = scale(radioPlaneta, radioPlaneta, radioPlaneta);
-
-	planetas.push({
-		ejeOrbita: ejOrb,//ejOrb, // Eje sobre desplaza
-		ejeRotOrbita: ejRot,//ejRot, // Eje sobre el que se rota
-
-		velRotXMismo: velRotX, // Velocidad de rotacion sobre si mismo
-		velRotYMismo: velRotY,
-		velRotZMismo: velRotZ,
-		posRotXMismo: 0.0, // Rotacion actual sobre si mismo
-		posRotYMismo: 0.0,
-		posRotZMismo: 0.0,
-		
-		velRotOrbita: velOrbita, // Velocidad rotacion en la orbita
-		posRotOrbita: 0.0, // Rotacion actual en la orbita
-
-		Matriz_Inclinacion_Orbita: M_Rot_Inclinacion,
-		Matriz_Traslacion_R_Orbita: M_Tras_R_Orb,
-		Matriz_Escalado: M_Escalado,
-
-		radius: radioPlaneta,
-		weight: 1.0,
-		position: vec3(0,0,0),
-	});
-
-	spheresToDraw.push({
-		programInfo: programInfo,
-		pointsArray: pointsArray,
-		colorsArray: arrayColor,
-		uniforms: {
-			u_colorMult: [1.0, 1.0, 1.0, 1.0],
-			u_model: new mat4(),
-		},
-		primType: "triangles",
-	});
+axis = { // AXIS
+	programInfo: programInfo,
+	pointsArray: pointsAxes, 
+	colorsArray: colorsAxes, 
+	uniforms: {
+	  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+	  u_model: new mat4(),
+	},
+	primType: "lines",
 }
 
-// Sol central
-generar_planeta(10, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
-// Planeta que orbita
-generar_planeta(2, 0.0, 0.1, 0.0, 30, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
+var objectsToDraw = [
+	// axis,
+];
+var navesToDraw = [];
+var ballsToDraw = [];
+
 
 // Creación de Naves enemigas
 
@@ -211,12 +122,7 @@ window.onload = function init() {
 	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
-	hud_distance_center = document.getElementById("hud_distance");
-	hud_velocity_target = document.getElementById("hud_velocity_target");
-	hud_velocity = document.getElementById("hud_velocity");
-	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
-	hud_ajustar_vel.textContent = "Velocidad Ajustada"
-	hud_ajustar_vel.style.display = 'none'
+	start_hud();
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
 		alert("WebGL isn't available");
@@ -297,72 +203,6 @@ function tick(nowish) {
 // Update Event Function
 //----------------------------------------------------------------------------
 
-var cooldown = 0;
-const MAX_COOLDOWN = 20;
-
-function spawn_disparo(position, direction, velocity) {
-	ballsToDraw.push(
-		{
-			programInfo: programInfo,
-			pointsArray: pointsDisp, 
-			colorsArray: colorsDisp, 
-			uniforms: {
-			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-			  u_model: translate(0,0,0),
-			},
-			primType: "triangles",
-		},
-	);
-	balls.push({
-		position: add(position, mult(0.05, direction)),
-		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
-		direction: direction,
-		lifetime: BALL_LIFETIME,
-		index: 0,
-		model: ballsToDraw[ballsToDraw.length-1]
-	});
-}
-/**
- * Elimina un objeto y su modelo asociado
- * 
- * @param {array} models - Array de modelos
- * @param {array} objects - Array de objetos
- * @param {number} i - Indice del objeto a eliminar
- * 
- */
-function remove_model_and_object(models, objects, i) {
-	const indice = models.indexOf(objects[i].model);
-
-	if (indice !== -1) {
-		models.splice(indice, 1);
-		objects.splice(i, 1);
-	}
-}
-function handle_disparos(dt) {
-	cooldown -= 1;
-	for(let i=0; i < balls.length; i++){
-		let ball = balls[i]
-		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
-		ball.position = add(ball.position, mult(dt, ball.velocity));
-		balls[i].lifetime -= 1;
-		if (balls[i].lifetime <= 0) {
-			remove_model_and_object(ballsToDraw, balls, i)
-		}
-	}
-	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
-		cooldown = MAX_COOLDOWN;
-		const lateral = mult(0.05, jugador.eje_X_rot);
-		spawn_disparo(add(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
-		spawn_disparo(subtract(jugador.position, lateral), jugador.eje_Z_rot, jugador.velocity)
-	}
-}
-
-function update_hud() {
-	hud_distance_center.textContent = length(jugador.position).toFixed(4) + " m"
-	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4) + " m/s"
-	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
-}
-
 /**
  * Actualiza el estado de la simulación
  * 
@@ -381,7 +221,7 @@ function update(dt) {
 	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad(jugador)));
 	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
 
-	handle_disparos(dt)
+	handle_disparos(dt, jugador)
 	
 	update_hud()
 
@@ -527,7 +367,6 @@ function render(dt) {
 	// DRAW
 	//----------------------------------------------------------------------------
 
-	setPrimitive(ballsToDraw);
 	objectsToDraw.forEach(function(object) {
 		renderObject(object, 1)
     });	
@@ -554,6 +393,23 @@ function render(dt) {
 //----------------------------------------------------------------------------
 // Utils functions
 //----------------------------------------------------------------------------
+
+function setOnePrimitive(object) {	
+	
+	switch(object.primType) {
+		case "lines":
+		  object.primitive = gl.LINES;
+		  break;
+		case "line_strip":
+		  object.primitive = gl.LINE_STRIP;
+		  break;
+		case "triangles":
+		  object.primitive = gl.TRIANGLES;
+		  break;
+		default:
+		  object.primitive = gl.TRIANGLES;
+	  }
+}	
 
 function setPrimitive(objectsToDraw) {	
 	
