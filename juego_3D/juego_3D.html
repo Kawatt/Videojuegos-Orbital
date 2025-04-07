@@ -7,6 +7,8 @@
           left: 0;
           color: aqua;
           font-size: x-large;
+          font-family: 'Courier New', Courier, monospace;
+          font-weight:500;
         }
         #hud_velocity_target {
           z-index: 1;
@@ -14,6 +16,8 @@
           left: 0;
           color: aqua;
           font-size: x-large;
+          font-family: 'Courier New', Courier, monospace;
+          font-weight:500;
         }
         #hud_velocity {
           z-index: 1;
@@ -23,10 +27,20 @@
           font-size: x-large;
           display: none;
         }
+        #hud_ajustar_vel {
+          position: absolute;
+          z-index: 1;
+          top: 480px;
+          left: 400px;
+          color: aqua;
+          font-size: x-large;
+          font-family: 'Courier New', Courier, monospace;
+          font-weight:500;
+        }
 
         #aim {
           position: absolute;
-          z-index: 2s;
+          z-index: 2;
           top: 100px;
           left: 100px;
           display: none;
@@ -74,6 +88,7 @@
     <script type="text/javascript" src="../Common/webgl-utils.js"></script>
     <script type="text/javascript" src="../Common/initShaders.js"></script>
     <script type="text/javascript" src="../Common/MVnew.js"></script>
+    <script type="text/javascript" src="juego_3D_geometria.js"></script>
     <script type="text/javascript" src="juego_3D.js"></script>
 </head>
 
@@ -83,6 +98,7 @@
     <div id="hud_distance" width="1024" height="512"> </div>
     <div id="hud_velocity_target" width="1024" height="512"> </div>
     <div id="hud_velocity" width="1024" height="512"> </div>
+    <div id="hud_ajustar_vel" width="1024" height="512"> </div>
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>

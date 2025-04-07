@@ -10,224 +10,19 @@ var gl;
 
 // CONSTANTES
 const ESCALA = 0.00001;
-const VEL_MOVIMIENTO = 0.1 * ESCALA;
+const VEL_MOVIMIENTO = 0.5 * ESCALA;
 const VEL_GIRAR = 8 * ESCALA;
 const MAX_VEL_GIRAR = 16000 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 const BALL_LIFETIME = 200;
 const SHOOTING_FORCE = 0.005;
+const INITIAL_POSITION = vec3(0.0, 0.0, -30.0);
 
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);
 
 var balls = [];
-
-//----------------------------------------------------------------------------
-// MODEL DATA 
-//----------------------------------------------------------------------------
-
-// AXIS
-const pointsAxes = [];
-pointsAxes.push([ 2.0, 0.0, 0.0, 1.0]); //x axis is green
-pointsAxes.push([-2.0, 0.0, 0.0, 1.0]);
-pointsAxes.push([ 0.0, 2.0, 0.0, 1.0]); //y axis is red
-pointsAxes.push([ 0.0,-2.0, 0.0, 1.0]); 
-pointsAxes.push([ 0.0, 0.0, 2.0, 1.0]); //z axis is blue
-pointsAxes.push([ 0.0, 0.0,-2.0, 1.0]);
-	
-const default_color =	[0.5, 0.5, 0.5, 1.0];
-const red =			[1.0, 0.0, 0.0, 1.0];
-const green =		[0.0, 1.0, 0.0, 1.0];
-const blue =		[0.0, 0.0, 1.0, 1.0];
-const lightred =	[1.0, 0.5, 0.5, 1.0];
-const lightgreen =	[0.5, 1.0, 0.5, 1.0];
-const lightblue = 	[0.5, 0.5, 1.0, 1.0];
-const white =		[1.0, 1.0, 1.0, 1.0];
-
-const colorsAxes = [
-	green, green, //x
-	red, red,     //y
-	blue, blue,   //z
-];		
-
-// NAVES ENEMIGAS
-const naveVerts = [
-	[ 0.0, 0.0, 0.5, 1], //0 punta delantera
-	[ 0.5, 0.0,-0.5, 1], //1
-	[-0.5, 0.0,-0.5, 1], //2
-	[ 0.0, 0.3,-0.3, 1], //3 ala
-];
-
-const naveIndices = [	
-	//Solid Cube - use TRIANGLES
-	0,1,2,
-	0,1,3,
-	0,2,3,
-	1,2,3,
-];
-
-const pointsNave = [];
-for (let i=0; i < naveIndices.length; i++)
-{
-	pointsNave.push(naveVerts[naveIndices[i]]);
-}
-
-let colorsNave = [	
-	red, lightred, lightred, 
-	red, lightred, lightred,
-	red, lightred, lightred, 
-	white, white, white,
-]
-
-// Disparos
-const dispVerts = [
-	[ 0.005, 0.005, 0.005, 1], //0
-	[ 0.005, 0.005,-0.005, 1], //1
-	[ 0.005,-0.005, 0.005, 1], //2
-	[ 0.005,-0.005,-0.005, 1], //3
-	[-0.005, 0.005, 0.005, 1], //4
-	[-0.005, 0.005,-0.005, 1], //5
-	[-0.005,-0.005, 0.005, 1], //6
-	[-0.005,-0.005,-0.005, 1], //7
-];
-
-const dispIndices = [	
-//Solid Cube - use TRIANGLES, starts at 0, 36 vertices
-	0,4,6, //front
-	0,6,2,
-	1,0,2, //right
-	1,2,3, 
-	5,1,3, //back
-	5,3,7,
-	4,5,7, //left
-	4,7,6,
-	4,0,1, //top
-	4,1,5,
-	6,7,3, //bottom
-	6,3,2,
-];
-
-const pointsDisp = [];
-for (let i=0; i < dispIndices.length; i++)
-{
-	pointsDisp.push(dispVerts[dispIndices[i]]);
-}
-
-const colorsDisp = [	
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-];	
-
-
-// PLANETAS
-function generateIcosahedronSphere(subdivisions) {
-    const t = (1.0 + Math.sqrt(5.0)) / 2.0;
-
-    // Vértices iniciales del icosaedro
-    let vertices = [
-        [-1, t, 0, 1.0], [1, t, 0, 1.0], [-1, -t, 0, 1.0], [1, -t, 0, 1.0],
-        [0, -1, t, 1.0], [0, 1, t, 1.0], [0, -1, -t, 1.0], [0, 1, -t, 1.0],
-        [t, 0, -1, 1.0], [t, 0, 1, 1.0], [-t, 0, -1, 1.0], [-t, 0, 1, 1.0],
-    ];
-
-    // Normalizar los vértices
-    vertices = vertices.map(v => normalize_new(v));
-
-    // Triángulos del icosaedro
-    let indices = [
-        [0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11],
-        [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8],
-        [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9],
-        [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1],
-    ];
-
-    // Subdivisión de triángulos
-    for (let i = 0; i < subdivisions; i++) {
-        let newIndices = [];
-        let midPointCache = {};
-
-        function getMidPoint(a, b) {
-            let key = a < b ? `${a}-${b}` : `${b}-${a}`;
-            if (midPointCache[key] !== undefined) {
-                return midPointCache[key];
-            }
-
-            let mid = normalize_new([
-                (vertices[a][0] + vertices[b][0]) / 2,
-                (vertices[a][1] + vertices[b][1]) / 2,
-                (vertices[a][2] + vertices[b][2]) / 2,
-                1.0
-            ]);
-
-            let index = vertices.length;
-            vertices.push(mid);
-            midPointCache[key] = index;
-            return index;
-        }
-
-        for (let tri of indices) {
-            let a = tri[0], b = tri[1], c = tri[2];
-            let ab = getMidPoint(a, b);
-            let bc = getMidPoint(b, c);
-            let ca = getMidPoint(c, a);
-
-            newIndices.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
-        }
-
-        indices = newIndices;
-    }
-
-    // Convertir los datos a buffers planos
-    let pointsArray = [];
-
-    for (let tri of indices) {
-        for (let idx of tri) {
-            let v = vertices[idx];
-            pointsArray.push(...v);
-			
-        }
-    }
-
-    return { pointsArray };
-}
-
-// Normalización de vectores
-function normalize_new(v) {
-    let len = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
-    return [v[0] / len, v[1] / len, v[2] / len, 1.0];
-}
-
-// Generar esfera con 3 subdivisiones (más alto -> más detallado)
-const { pointsArray } = generateIcosahedronSphere(3);
-
-function arrayColorSun() {
-	let ret = [];
-	for (let i=0; i < pointsArray.length; i++) {
-		let greenValue = Math.random()*0.6+0.2;
-		let redValue = 1.0;
-		let blueValue = 0.0;
-		ret.push([redValue, greenValue, blueValue, 1.0]);
-	}
-	return ret;
-}
-var colorsArraySun = arrayColorSun()
-
-function arrayColorPlanet() {
-	let ret = [];
-	for (let i=0; i < pointsArray.length; i++) {
-		let greenValue = Math.random()*0.6+0.2;
-		let blueValue = 1.0;
-		let redValue = 0.0;
-		ret.push([redValue, greenValue, blueValue, 1.0]);
-	}
-	return ret;
-}
-var colorsArrayPlanet = arrayColorPlanet()
 
 //----------------------------------------------------------------------------
 // OTHER DATA 
@@ -350,7 +145,11 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 
 		Matriz_Inclinacion_Orbita: M_Rot_Inclinacion,
 		Matriz_Traslacion_R_Orbita: M_Tras_R_Orb,
-		Matriz_Escalado: M_Escalado
+		Matriz_Escalado: M_Escalado,
+
+		radius: radioPlaneta,
+		weight: 1.0,
+		position: vec3(0,0,0),
 	});
 
 	spheresToDraw.push({
@@ -366,16 +165,16 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 }
 
 // Sol central
-generar_planeta(1, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
+generar_planeta(10, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
-generar_planeta(0.5, 0.0, 0.1, 0.0, 5, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
+generar_planeta(2, 0.0, 0.1, 0.0, 30, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
 
 // Creación de Naves enemigas
 
 var naves = [];
 function createNaveEnemiga() {
 	naves.push({
-		position: vec3(0.0,2.0,0.0),
+		position: vec3(0.0,15.0,0.0),
 		velocity: vec3(0.0,0.0,0.0),
 		roll_velocity: 0.0,
 		yaw_velocity: 0.0,
@@ -412,8 +211,25 @@ createNaveEnemiga()
 // Nave jugador
 //------------------------------------------------------------------------------
 
+function reset_jugador() {
+	jugador.position = INITIAL_POSITION,
+	jugador.velocity = vec3(0.0, 0.0, 0.0),
+	jugador.yaw_velocity = 0.0,
+	jugador.pitch_velocity = 0.0,
+	jugador.roll_velocity = 0.0,
+
+	jugador.yaw = 0.0;
+	jugador.pitch = 0.0;
+	jugador.roll = 0.0;
+	jugador.eje_X_rot = vec3(1.0,0.0,0.0);
+	jugador.eje_Y_rot = vec3(0.0,1.0,0.0);
+	jugador.eje_Z_rot = vec3(0.0,0.0,1.0);
+
+	jugador.rotation = vec3(0.0, 0.0, 0.0);
+}
+
 var jugador = {
-	position: vec3(0.0, 0.0, -3.0),
+	position: INITIAL_POSITION,
 	velocity: vec3(0.0, 0.0, 0.0),
 	acceleration: vec3(0.0, 0.0, 0.0),
 	yaw_velocity: 0.0,
@@ -455,6 +271,8 @@ function calcular_gravedad() {
     if (teclas_pulsadas.derecha == 1) {
         gravedad = mult(-VEL_MOVIMIENTO, jugador.eje_X_rot);
     }
+	// calculo solo del sol
+	gravedad = add(gravedad, mult((VEL_MOVIMIENTO*0.2)/length(normalize(subtract(vec3(0,0,0), jugador.position))), normalize(subtract(vec3(0,0,0), jugador.position))))
 	return gravedad;
 }
 
@@ -488,6 +306,12 @@ function calcular_gravedad() {
     // Si hay dos soluciones, devuelve ambos puntos
     return discriminante === 0;
 }*/
+
+function colision_esferas(centro1, radio1, centro2, radio2){
+	let radiot = radio1 + radio2;
+	let distancia = length(subtract(centro1, centro2));
+	return distancia <= radiot;
+}
 
 //------------------------------------------------------------------------------
 // IA
@@ -637,6 +461,7 @@ function keyReleasedHandler(event) {
 		case "z":
 		case "Z":
 			teclas_pulsadas.parar = 0;
+			hud_ajustar_vel.style.display = 'none'
 			break;
 		case "f":
 		case "F":
@@ -680,6 +505,7 @@ function aplicarFuerzaOpuesta(dt, velocidad, vel_objetivo) {
 
     // Si la distancia es casi cero, considera que ya se ha detenido
     if (distancia < 1e-5) {
+		hud_ajustar_vel.style.display = 'inline'
 		console.log("Velocidad Ajustada");
 		teclas_pulsadas.parar = 2;
 		return vel_objetivo;
@@ -811,6 +637,7 @@ var canvas;
 var hud_distance_centerhud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
+var hud_ajustar_vel;
 
 window.onload = function init() {
 	
@@ -819,6 +646,9 @@ window.onload = function init() {
 	hud_distance_center = document.getElementById("hud_distance");
 	hud_velocity_target = document.getElementById("hud_velocity_target");
 	hud_velocity = document.getElementById("hud_velocity");
+	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
+	hud_ajustar_vel.textContent = "Velocidad Ajustada"
+	hud_ajustar_vel.style.display = 'none'
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
 		alert("WebGL isn't available");
@@ -862,7 +692,7 @@ window.onload = function init() {
 	view = lookAt(eye,target,up);
 
 	// Establecer la proyeccion perspectiva por defecto
-	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 100.0 );
+	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 1000.0 );
 
 	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
@@ -960,8 +790,8 @@ function handle_disparos(dt) {
 }
 
 function update_hud() {
-	hud_distance_center.textContent = "Distancia al Sol: " + length(jugador.position).toFixed(4)
-	hud_velocity_target.textContent = "Velocidad hacia el Sol: " + (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4)
+	hud_distance_center.textContent = length(jugador.position).toFixed(4) + " m"
+	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4) + " m/s"
 	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
@@ -986,6 +816,10 @@ function update(dt) {
 	handle_disparos(dt)
 	
 	update_hud()
+
+	if (colision_esferas(jugador.position, 0.1, vec3(0.0,0.0,0.0), 10)) {
+		reset_jugador();
+	}
 
 	//if (balls.length > 0) console.log(balls[0].velocity)
 
@@ -1125,6 +959,7 @@ function render(dt) {
 	// DRAW
 	//----------------------------------------------------------------------------
 
+	setPrimitive(ballsToDraw);
 	objectsToDraw.forEach(function(object) {
 		renderObject(object, 1)
     });	
@@ -1134,7 +969,6 @@ function render(dt) {
 	navesToDraw.forEach(function(object) {
 		renderObject(object, 1);
     });
-	setPrimitive(ballsToDraw);
 	ballsToDraw.forEach(function(object) {
 		renderObject(object, 1);
     });	
