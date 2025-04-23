@@ -36,6 +36,22 @@ function colision_esferas(centro1, radio1, centro2, radio2){
 	return distancia <= radiot;
 }
 
+function detectar_colisiones() {
+	if (colision_esferas(jugador.position, 1, vec3(0.0,0.0,0.0), 10)) {
+		reset_jugador();
+	}
+	naves.forEach(function(nave) {
+		if (colision_esferas(jugador.position, 1, nave.position, 1)) {
+			reset_jugador();
+		}
+    });
+	balls.forEach(function(ball) {
+		if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
+			reset_jugador();
+		}
+    });	
+}
+
 /*function intersecta(punto, direccion, centro, radio) {
 	// Variables del origen y dirección
     const [ox, oy, oz] = punto;

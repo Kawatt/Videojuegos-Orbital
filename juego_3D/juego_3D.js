@@ -225,9 +225,8 @@ function update(dt) {
 	
 	update_hud()
 
-	if (colision_esferas(jugador.position, 0.1, vec3(0.0,0.0,0.0), 10)) {
-		reset_jugador();
-	}
+	detectar_colisiones()
+	
 
 	//if (balls.length > 0) console.log(balls[0].velocity)
 

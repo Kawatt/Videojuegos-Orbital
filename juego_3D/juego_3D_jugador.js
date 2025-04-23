@@ -43,6 +43,57 @@ function reset_jugador() {
 	jugador.rotation = vec3(0.0, 0.0, 0.0);
 }
 
+// DISPAROS
+
+var cooldown = 0;
+
+var balls = [];
+
+function spawn_disparo(position, direction, velocity) {
+	let ball = {
+		programInfo: programInfo,
+		pointsArray: pointsDisp, 
+		colorsArray: colorsDisp, 
+		uniforms: {
+		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+		  u_model: translate(0,0,0),
+		},
+		primType: "triangles",
+	};
+	ballsToDraw.push(
+		ball,
+	);
+	balls.push({
+		position: add(position, mult(0.05, direction)),
+		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
+		direction: direction,
+		lifetime: BALL_LIFETIME,
+		index: 0,
+		model: ballsToDraw[ballsToDraw.length-1]
+	});
+	setOnePrimitive(ball);
+}
+
+
+function handle_disparos(dt, nave) {
+	cooldown -= 1;
+	for(let i=0; i < balls.length; i++){
+		let ball = balls[i]
+		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
+		ball.position = add(ball.position, mult(dt, ball.velocity));
+		balls[i].lifetime -= 1;
+		if (balls[i].lifetime <= 0) {
+			remove_model_and_object(ballsToDraw, balls, i)
+		}
+	}
+	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
+		cooldown = MAX_DISP_COOLDOWN;
+		const lateral = mult(0.05, nave.eje_X_rot);
+		spawn_disparo(add(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
+		spawn_disparo(subtract(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
+	}
+}
+
 //------------------------------------------------------------------------------
 // Controles
 //------------------------------------------------------------------------------
@@ -316,56 +367,5 @@ function mover_camara(dt) {
 		if ((teclas_pulsadas.delante == 0) & (teclas_pulsadas.atras == 0)) {
 			jugador.velocity[2] = reducirGiro(dt, VEL_MOVIMIENTO, jugador.velocity[2])
 		}
-	}
-}
-
-// DISPAROS
-
-var cooldown = 0;
-
-var balls = [];
-
-function spawn_disparo(position, direction, velocity) {
-	let ball = {
-		programInfo: programInfo,
-		pointsArray: pointsDisp, 
-		colorsArray: colorsDisp, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: translate(0,0,0),
-		},
-		primType: "triangles",
-	};
-	ballsToDraw.push(
-		ball,
-	);
-	balls.push({
-		position: add(position, mult(0.05, direction)),
-		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
-		direction: direction,
-		lifetime: BALL_LIFETIME,
-		index: 0,
-		model: ballsToDraw[ballsToDraw.length-1]
-	});
-	setOnePrimitive(ball);
-}
-
-
-function handle_disparos(dt, nave) {
-	cooldown -= 1;
-	for(let i=0; i < balls.length; i++){
-		let ball = balls[i]
-		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
-		ball.position = add(ball.position, mult(dt, ball.velocity));
-		balls[i].lifetime -= 1;
-		if (balls[i].lifetime <= 0) {
-			remove_model_and_object(ballsToDraw, balls, i)
-		}
-	}
-	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
-		cooldown = MAX_DISP_COOLDOWN;
-		const lateral = mult(0.05, nave.eje_X_rot);
-		spawn_disparo(add(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
-		spawn_disparo(subtract(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
 	}
 }
