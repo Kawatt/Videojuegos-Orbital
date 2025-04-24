@@ -59,28 +59,27 @@ var cooldown = 0;
 var balls = [];
 
 function spawn_disparo(position, direction, velocity) {
-	let ball = {
-		programInfo: programInfo,
-		pointsArray: pointsDisp, 
-		colorsArray: colorsDisp, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: translate(0,0,0),
+	crear_objeto_y_modelo(
+		{
+			position: add(position, mult(0.05, direction)),
+			velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
+			direction: direction,
+			lifetime: BALL_LIFETIME,
+			index: 0,
+			model: objectsToDraw[objectsToDraw.length-1]
 		},
-		primType: "triangles",
-	};
-	objectsToDraw.push(
-		ball,
+		{
+			programInfo: programInfo,
+			pointsArray: pointsDisp, 
+			colorsArray: colorsDisp, 
+			uniforms: {
+			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+			  u_model: translate(0,0,0),
+			},
+			primType: "triangles",
+		},
+		balls
 	);
-	balls.push({
-		position: add(position, mult(0.05, direction)),
-		velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
-		direction: direction,
-		lifetime: BALL_LIFETIME,
-		index: 0,
-		model: objectsToDraw[objectsToDraw.length-1]
-	});
-	setOnePrimitive(ball);
 }
 
 

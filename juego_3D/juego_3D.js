@@ -62,47 +62,49 @@ var objectsToDraw = [
 	// axis,
 ];
 
+function crear_objeto_y_modelo(object, model, vector) {
+	setOnePrimitive(model);
+	objectsToDraw.push(model);
+	object.model = model;
+	vector.push(object);
+}
+
 
 // Creación de Naves enemigas
 
 var naves = [];
 function createNaveEnemiga() {
-	let model = {
-		programInfo: programInfo,
-		pointsArray: pointsNave, 
-		colorsArray: colorsNave, 
-		uniforms: {
-		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-		  u_model: new mat4(),
-		},
-		primType: "triangles",
-	};
-	objectsToDraw.push(
-		model,
-	)
-	setOnePrimitive(model)
-	naves.push({
-		position: vec3(0.0,15.0,0.0),
-		velocity: vec3(0.0,0.0,0.0),
-		roll_velocity: 0.0,
-		yaw_velocity: 0.0,
-		pitch_velocity: 0.0,
-	
-		yaw: 0.0,
-		pitch: 0.0,
-		roll: 0.0,
-		rot_yaw: 0.0,
-		rot_pitch: 0.0,
-		rot_roll: 0.0,
-		eje_X_rot: vec3(1.0,0.0,0.0),
-		eje_Y_rot: vec3(0.0,1.0,0.0),
-		eje_Z_rot: vec3(0.0,0.0,1.0),
-	
-		target: vec3(0.0,0.0,0.0),
-
-		model: objectsToDraw[objectsToDraw.length-1]
-	});
-	
+	crear_objeto_y_modelo(
+		{
+			position: vec3(0.0,15.0,0.0),
+			velocity: vec3(0.0,0.0,0.0),
+			roll_velocity: 0.0,
+			yaw_velocity: 0.0,
+			pitch_velocity: 0.0,
+		
+			yaw: 0.0,
+			pitch: 0.0,
+			roll: 0.0,
+			rot_yaw: 0.0,
+			rot_pitch: 0.0,
+			rot_roll: 0.0,
+			eje_X_rot: vec3(1.0,0.0,0.0),
+			eje_Y_rot: vec3(0.0,1.0,0.0),
+			eje_Z_rot: vec3(0.0,0.0,1.0),
+		
+			target: vec3(0.0,0.0,0.0)
+		}, 
+		{
+			programInfo: programInfo,
+			pointsArray: pointsNave, 
+			colorsArray: colorsNave, 
+			uniforms: {
+			u_colorMult: [1.0, 1.0, 1.0, 1.0],
+			u_model: new mat4(),
+			},
+			primType: "triangles",
+		}, 
+		naves)
 }
 
 //------------------------------------------------------------------------------
