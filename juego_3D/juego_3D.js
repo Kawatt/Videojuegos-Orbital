@@ -8,9 +8,6 @@
 // Variable to store the WebGL rendering context
 var gl;
 
-// CONSTANTES
-
-
 var rotAngle = 0.0;
 var rotChange = 0.5;
 
@@ -46,10 +43,6 @@ function start_hud() {
 	hud_ajustar_vel.style.display = 'none';
 }
 
-
-
-
-
 //----------------------------------------------------------------------------
 // OBJECTS TO DRAW 
 //----------------------------------------------------------------------------
@@ -68,14 +61,26 @@ axis = { // AXIS
 var objectsToDraw = [
 	// axis,
 ];
-var navesToDraw = [];
-var ballsToDraw = [];
 
 
 // Creación de Naves enemigas
 
 var naves = [];
 function createNaveEnemiga() {
+	let model = {
+		programInfo: programInfo,
+		pointsArray: pointsNave, 
+		colorsArray: colorsNave, 
+		uniforms: {
+		  u_colorMult: [1.0, 1.0, 1.0, 1.0],
+		  u_model: new mat4(),
+		},
+		primType: "triangles",
+	};
+	objectsToDraw.push(
+		model,
+	)
+	setOnePrimitive(model)
 	naves.push({
 		position: vec3(0.0,15.0,0.0),
 		velocity: vec3(0.0,0.0,0.0),
@@ -94,26 +99,16 @@ function createNaveEnemiga() {
 		eje_Z_rot: vec3(0.0,0.0,1.0),
 	
 		target: vec3(0.0,0.0,0.0),
+
+		model: objectsToDraw[objectsToDraw.length-1]
 	});
-	navesToDraw.push(
-		{
-			programInfo: programInfo,
-			pointsArray: pointsNave, 
-			colorsArray: colorsNave, 
-			uniforms: {
-			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-			  u_model: new mat4(),
-			},
-			primType: "triangles",
-		},
-	)
+	
 }
-createNaveEnemiga()
 
 //------------------------------------------------------------------------------
 
 var canvas;
-var hud_distance_centerhud_distance_center;
+var hud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
 var hud_ajustar_vel;
@@ -122,6 +117,8 @@ window.onload = function init() {
 	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight;
 	start_hud();
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) {
@@ -134,8 +131,6 @@ window.onload = function init() {
 
 	setPrimitive(objectsToDraw);
 	setPrimitive(spheresToDraw);
-	setPrimitive(navesToDraw);
-	setPrimitive(ballsToDraw);
 
 	// Set up a WebGL program
 	// Load shaders and initialize attribute buffers
@@ -174,8 +169,7 @@ window.onload = function init() {
 	window.addEventListener("keydown", keyDownHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
 	
-	//canvas.addEventListener("mouseenter", () => mouseInside = true);
-	//canvas.addEventListener("mouseleave", () => mouseInside = false);
+	createNaveEnemiga();
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -227,7 +221,6 @@ function update(dt) {
 
 	detectar_colisiones()
 	
-
 	//if (balls.length > 0) console.log(balls[0].velocity)
 
 	for(let i=0; i < naves.length; i++){
@@ -336,30 +329,28 @@ function render(dt) {
 	// Renderizado de naves
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
-		// Reset a origen
-		navesToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
+		let uniforms = nave.model.uniforms;
+
 		// Mover a position
-		navesToDraw[i].uniforms.u_model = translate(nave.position[0], nave.position[1], nave.position[2]);
+		uniforms.u_model = translate(nave.position[0], nave.position[1], nave.position[2]);
 
+		// Rotaciones sobre si mismo
 		let RMZ = rotate(nave.rot_roll, ejeZ);
-		navesToDraw[i].uniforms.u_model =
-			mult(navesToDraw[i].uniforms.u_model, RMZ)
-		;
-
+		uniforms.u_model = mult(uniforms.u_model, RMZ);
+		
 		let RMY = rotate(nave.rot_yaw, ejeY);
-		navesToDraw[i].uniforms.u_model =
-			mult(navesToDraw[i].uniforms.u_model, RMY)
-		;
-
+		uniforms.u_model = mult(uniforms.u_model, RMY);
+		
 		let RMX = rotate(nave.rot_pitch, ejeX);
-		navesToDraw[i].uniforms.u_model =
-			mult(navesToDraw[i].uniforms.u_model, RMX)
-		;
+		uniforms.u_model = mult(uniforms.u_model, RMX);
+
 	}
 
 	for(let i=0; i < balls.length; i++){
 		let ball = balls[i];
-		ballsToDraw[i].uniforms.u_model = translate(ball.position[0], ball.position[1], ball.position[2]);
+		let uniforms = ball.model.uniforms;
+
+		uniforms.u_model = translate(ball.position[0], ball.position[1], ball.position[2]);
 	}
 	
 	//----------------------------------------------------------------------------
@@ -371,13 +362,7 @@ function render(dt) {
     });	
 	spheresToDraw.forEach(function(object) {
 		renderObject(object, 4);
-    });	
-	navesToDraw.forEach(function(object) {
-		renderObject(object, 1);
     });
-	ballsToDraw.forEach(function(object) {
-		renderObject(object, 1);
-    });	
     
 	rotAngle += rotChange;
 	for (let i=0; i < planetas.length; i++) {
@@ -393,39 +378,26 @@ function render(dt) {
 // Utils functions
 //----------------------------------------------------------------------------
 
-function setOnePrimitive(object) {	
+function setOnePrimitive(model) {	
 	
-	switch(object.primType) {
+	switch(model.primType) {
 		case "lines":
-		  object.primitive = gl.LINES;
+		  model.primitive = gl.LINES;
 		  break;
 		case "line_strip":
-		  object.primitive = gl.LINE_STRIP;
+		  model.primitive = gl.LINE_STRIP;
 		  break;
 		case "triangles":
-		  object.primitive = gl.TRIANGLES;
+		  model.primitive = gl.TRIANGLES;
 		  break;
 		default:
-		  object.primitive = gl.TRIANGLES;
+		  model.primitive = gl.TRIANGLES;
 	  }
 }	
 
 function setPrimitive(objectsToDraw) {	
-	
-	objectsToDraw.forEach(function(object) {
-		switch(object.primType) {
-		  case "lines":
-			object.primitive = gl.LINES;
-			break;
-		  case "line_strip":
-			object.primitive = gl.LINE_STRIP;
-			break;
-		  case "triangles":
-		    object.primitive = gl.TRIANGLES;
-		    break;
-		  default:
-			object.primitive = gl.TRIANGLES;
-		}
+	objectsToDraw.forEach(function(model) {
+		setOnePrimitive(model)
 	});	
 }	
 

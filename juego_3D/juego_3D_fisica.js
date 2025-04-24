@@ -45,11 +45,11 @@ function detectar_colisiones() {
 			reset_jugador();
 		}
     });
-	balls.forEach(function(ball) {
-		if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
-			reset_jugador();
-		}
-    });	
+	balls.forEach(function(ball, i) {
+		if(naves.length > 0){if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
+			remove_model_and_object(objectsToDraw, naves, 0)
+		}}
+    });
 }
 
 /*function intersecta(punto, direccion, centro, radio) {

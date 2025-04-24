@@ -8,39 +8,48 @@
 var vuelo_sencillo = 0; // la nave ajusta constantemente la velocidad si es 1
 
 var jugador = {
+
 	position: INITIAL_POSITION,
 	velocity: vec3(0.0, 0.0, 0.0),
 	acceleration: vec3(0.0, 0.0, 0.0),
-	yaw_velocity: 0.0,
-	pitch_velocity: 0.0,
-	roll_velocity: 0.0,
 
 	yaw: 0.0,
 	pitch: 0.0,
 	roll: 0.0,
+	yaw_velocity: 0.0,
+	pitch_velocity: 0.0,
+	roll_velocity: 0.0,
+	rot_yaw: 0.0,
+	rot_pitch: 0.0,
+	rot_roll: 0.0,
+
 	eje_X_rot: vec3(1.0,0.0,0.0),
 	eje_Y_rot: vec3(0.0,1.0,0.0),
 	eje_Z_rot: vec3(0.0,0.0,1.0),
 
-	rotation: vec3(0.0, 0.0, 0.0),
 	diameter: 1.5,
 }
 
 function reset_jugador() {
+
 	jugador.position = INITIAL_POSITION,
 	jugador.velocity = vec3(0.0, 0.0, 0.0),
-	jugador.yaw_velocity = 0.0,
-	jugador.pitch_velocity = 0.0,
-	jugador.roll_velocity = 0.0,
+	jugador.acceleration = vec3(0.0, 0.0, 0.0),
 
 	jugador.yaw = 0.0;
 	jugador.pitch = 0.0;
 	jugador.roll = 0.0;
+	jugador.yaw_velocity = 0.0,
+	jugador.pitch_velocity = 0.0,
+	jugador.roll_velocity = 0.0,
+	jugador.rot_yaw = 0.0;
+	jugador.rot_pitch = 0.0;
+	jugador.rot_roll = 0.0;
+
 	jugador.eje_X_rot = vec3(1.0,0.0,0.0);
 	jugador.eje_Y_rot = vec3(0.0,1.0,0.0);
 	jugador.eje_Z_rot = vec3(0.0,0.0,1.0);
 
-	jugador.rotation = vec3(0.0, 0.0, 0.0);
 }
 
 // DISPAROS
@@ -60,7 +69,7 @@ function spawn_disparo(position, direction, velocity) {
 		},
 		primType: "triangles",
 	};
-	ballsToDraw.push(
+	objectsToDraw.push(
 		ball,
 	);
 	balls.push({
@@ -69,7 +78,7 @@ function spawn_disparo(position, direction, velocity) {
 		direction: direction,
 		lifetime: BALL_LIFETIME,
 		index: 0,
-		model: ballsToDraw[ballsToDraw.length-1]
+		model: objectsToDraw[objectsToDraw.length-1]
 	});
 	setOnePrimitive(ball);
 }
@@ -79,11 +88,10 @@ function handle_disparos(dt, nave) {
 	cooldown -= 1;
 	for(let i=0; i < balls.length; i++){
 		let ball = balls[i]
-		//ball.velocity = add(ball.velocity, mult(dt * VEL_MOVIMIENTO * 2, ball.direction));
 		ball.position = add(ball.position, mult(dt, ball.velocity));
 		balls[i].lifetime -= 1;
 		if (balls[i].lifetime <= 0) {
-			remove_model_and_object(ballsToDraw, balls, i)
+			remove_model_and_object(objectsToDraw, balls, i)
 		}
 	}
 	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
@@ -254,8 +262,8 @@ function keyReleasedHandler(event) {
  */
 function nuevo_eje_movimiento(nave) {
 
-	let matriz_rot_yaw = rotate(nave.yaw, nave.eje_Y_rot);
     let matriz_rot_pitch = rotate(nave.pitch, nave.eje_X_rot);
+	let matriz_rot_yaw = rotate(nave.yaw, nave.eje_Y_rot);
     let matriz_rot_roll = rotate(nave.roll, nave.eje_Z_rot);
 
 	let matriz_total = mult(matriz_rot_roll, mult(matriz_rot_yaw, matriz_rot_pitch));
