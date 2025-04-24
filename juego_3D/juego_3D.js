@@ -12,11 +12,26 @@ var rotAngle = 0.0;
 var rotChange = 0.5;
 
 /**
+ * Añade el objeto al vector y le asocia el modelo
+ * 
+ * @param {Object} object - Nuevo objeto
+ * @param {Object} model - Modelo a asociar al objeto
+ * @param {Array} vector - Vector al que añadir el objeto
+ * 
+ */
+function crear_objeto_y_modelo(object, model, vector) {
+	setOnePrimitive(model);
+	objectsToDraw.push(model);
+	object.model = model;
+	vector.push(object);
+}
+
+/**
  * Elimina un objeto y su modelo asociado
  * 
- * @param {array} models - Array de modelos
- * @param {array} objects - Array de objetos
- * @param {number} i - Indice del objeto a eliminar
+ * @param {Array} models - Array de modelos
+ * @param {Array} objects - Array de objetos
+ * @param {Number} i - Indice del objeto a eliminar
  * 
  */
 function remove_model_and_object(models, objects, i) {
@@ -28,12 +43,18 @@ function remove_model_and_object(models, objects, i) {
 	}
 }
 
+/**
+ * Actualiza los contenidos del HUD
+ */
 function update_hud() {
 	hud_distance_center.textContent = length(jugador.position).toFixed(4) + " m"
 	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4) + " m/s"
 	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
+/**
+ * Inicializa el HUD
+ */
 function start_hud() {
 	hud_distance_center = document.getElementById("hud_distance");
 	hud_velocity_target = document.getElementById("hud_velocity_target");
@@ -61,14 +82,6 @@ axis = { // AXIS
 var objectsToDraw = [
 	// axis,
 ];
-
-function crear_objeto_y_modelo(object, model, vector) {
-	setOnePrimitive(model);
-	objectsToDraw.push(model);
-	object.model = model;
-	vector.push(object);
-}
-
 
 // Creación de Naves enemigas
 

@@ -48,6 +48,7 @@ function detectar_colisiones() {
 	balls.forEach(function(ball, i) {
 		if(naves.length > 0){if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
 			remove_model_and_object(objectsToDraw, naves, 0)
+			remove_model_and_object(objectsToDraw, balls, i)
 		}}
     });
 }

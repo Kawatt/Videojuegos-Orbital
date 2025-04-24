@@ -183,6 +183,10 @@ function keyDownHandler(event) {
 		case "F":
 			teclas_pulsadas.disparar = 1;
 			break;
+		case "r":
+		case "R":
+			reset_jugador();
+			break;
 		default:
 			console.log("UNHANDLED INPUT: " + event.key)
 			break;
