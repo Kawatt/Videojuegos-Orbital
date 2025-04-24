@@ -64,9 +64,7 @@ function spawn_disparo(position, direction, velocity) {
 			position: add(position, mult(0.05, direction)),
 			velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
 			direction: direction,
-			lifetime: BALL_LIFETIME,
-			index: 0,
-			model: objectsToDraw[objectsToDraw.length-1]
+			lifetime: BALL_LIFETIME
 		},
 		{
 			programInfo: programInfo,
