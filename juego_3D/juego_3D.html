@@ -2,57 +2,60 @@
 <html>
     <style>
         #hud_distance {
-          z-index: 1;
-          top: 0;
-          left: 0;
-          color: aqua;
-          font-size: x-large;
-          font-family: 'Courier New', Courier, monospace;
-          font-weight:500;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            color: aqua;
+            font-size: x-large;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight:500;
         }
         #hud_velocity_target {
-          z-index: 1;
-          top: 0;
-          left: 0;
-          color: aqua;
-          font-size: x-large;
-          font-family: 'Courier New', Courier, monospace;
-          font-weight:500;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            color: aqua;
+            font-size: x-large;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight:500;
         }
         #hud_velocity {
-          z-index: 1;
-          top: 0;
-          left: 0;
-          color: aqua;
-          font-size: x-large;
-          display: none;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            color: aqua;
+            font-size: x-large;
+            display: none;
         }
         #hud_ajustar_vel {
-          position: absolute;
-          z-index: 1;
-          top: 90%;
-          left: 50%;
-          transform: translate(-50%, -90%);
-          color: aqua;
-          font-size: x-large;
-          font-family: 'Courier New', Courier, monospace;
-          font-weight:500;
-          text-align: center;
+            position: absolute;
+            z-index: 1;
+            top: 90%;
+            left: 50%;
+            transform: translate(-50%, -90%);
+            color: aqua;
+            font-size: x-large;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight:500;
+            text-align: center;
         }
 
         #aim {
-          position: absolute;
-          z-index: 2;
-          top: 100px;
-          left: 100px;
-          display: none;
+            position: absolute;
+            z-index: 2;
+            top: 100px;
+            left: 100px;
+            z-index: 1;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
       
         #gl-canvas {
-          position: absolute;
-          z-index: -1;
-          top: 0;
-          left: 0;
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
         }
       </style>
 <head>
@@ -60,28 +63,28 @@
 
     <!-- Vertex shader -->
     <script id="vertex-shader" type="x-shader/x-vertex">
-         attribute vec3 vPosition;
-         attribute vec4 vColor;
-		 uniform mat4 model; // model matrix
-		 uniform mat4 view; // view matrix 
-		 uniform mat4 projection; // projection matrix
-         varying vec4 varColor;
-         void main() 
-         {
-              gl_Position = projection * view * model * vec4(vPosition, 1);
-              varColor = vColor;
-         }
+        attribute vec3 vPosition;
+        attribute vec4 vColor;
+        uniform mat4 model; // model matrix
+        uniform mat4 view; // view matrix 
+        uniform mat4 projection; // projection matrix
+        varying vec4 varColor;
+        void main() 
+        {
+            gl_Position = projection * view * model * vec4(vPosition, 1);
+            varColor = vColor;
+        }
     </script>
 
     <!-- Fragment shader -->
     <script id="fragment-shader" type="x-shader/x-fragment">
-    	precision mediump float;
-    	varying vec4 varColor;
-    	uniform vec4 colorMult;
-    	void main() 
-    	{ 
+        precision mediump float;
+        varying vec4 varColor;
+        uniform vec4 colorMult;
+        void main() 
+        { 
             gl_FragColor = varColor * colorMult;
-    	}
+        }
     </script>
 
     <!-- Ficheros Javascript externos. 
@@ -100,7 +103,7 @@
 
 <body>
     <!-- El canvas, que permite renderizar con WebGL -->
-    <img id="aim" src="aim-aim-blue.png" width="256" height="256" />
+    <img id="aim" src="../sources/target.png" width="64" height="64" />
     <div id="hud_distance" width="1024" height="512"> </div>
     <div id="hud_velocity_target" width="1024" height="512"> </div>
     <div id="hud_velocity" width="1024" height="512"> </div>
