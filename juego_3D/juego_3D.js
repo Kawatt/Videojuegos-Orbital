@@ -8,9 +8,6 @@
 // Variable to store the WebGL rendering context
 var gl;
 
-var rotAngle = 0.0;
-var rotChange = 0.5;
-
 /**
  * Añade el objeto al vector y le asocia el modelo
  * 
@@ -124,6 +121,7 @@ function createNaveEnemiga() {
 //------------------------------------------------------------------------------
 
 var canvas;
+// HUD
 var hud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
@@ -221,23 +219,17 @@ function tick(nowish) {
  * 
  */
 function update(dt) {
-	// Calculo rotación del jugador
+	
 	mover_camara(dt);
-	jugador.yaw += jugador.yaw_velocity * dt;
-	jugador.pitch += jugador.pitch_velocity * dt;
-	jugador.roll += jugador.roll_velocity * dt;
+	calcular_rotacion(jugador, dt);
 	nuevo_eje_movimiento(jugador);
-	// Calculo movimiento del jugador
-	jugador.velocity = add(jugador.velocity, mult(dt, calcular_gravedad(jugador)));
-	jugador.position = add(jugador.position, mult(dt, jugador.velocity));
+	calcular_movimiento_jugador(jugador, dt);
 
-	handle_disparos(dt, jugador)
+	handle_disparos(dt, jugador);
 	
-	update_hud()
+	update_hud();
 
-	detectar_colisiones()
-	
-	//if (balls.length > 0) console.log(balls[0].velocity)
+	detectar_colisiones();
 
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
@@ -246,9 +238,7 @@ function update(dt) {
 		nave.pitch_velocity = VEL_GIRAR * dt * 10
 		nave.roll_velocity = VEL_GIRAR * dt * 10
 
-		nave.yaw = nave.yaw_velocity * dt;
-		nave.pitch = nave.pitch_velocity * dt;
-		nave.roll = nave.roll_velocity * dt;
+		calcular_rotacion(nave, dt);
 		nave.rot_yaw += nave.yaw;
 		nave.rot_pitch += nave.pitch;
 		nave.rot_roll += nave.roll;
@@ -380,7 +370,6 @@ function render(dt) {
 		renderObject(object, 4);
     });
     
-	rotAngle += rotChange;
 	for (let i=0; i < planetas.length; i++) {
 		planetas[i].posRotOrbita += planetas[i].velRotOrbita
 		planetas[i].posRotXMismo += planetas[i].velRotXMismo

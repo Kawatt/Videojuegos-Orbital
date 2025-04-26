@@ -28,6 +28,7 @@ var jugador = {
 	eje_Z_rot: vec3(0.0,0.0,1.0),
 
 	diameter: 1.5,
+	mass: 100
 }
 
 function reset_jugador() {
@@ -281,6 +282,52 @@ function nuevo_eje_movimiento(nave) {
     nave.eje_Y_rot = normalize(vec3(newEjeY[0],newEjeY[1],newEjeY[2]))
     nave.eje_Z_rot = normalize(vec3(newEjeZ[0],newEjeZ[1],newEjeZ[2]))
 
+}
+
+/**
+ * Calcula yaw, pitch y roll según la velocidad de rotación
+ * 
+ * @param {*} nave Nave de la que calcular las rotaciones
+ * @param {*} dt Deltatime
+ */
+function calcular_rotacion(nave, dt) {
+	nave.yaw += nave.yaw_velocity * dt;
+	nave.pitch += nave.pitch_velocity * dt;
+	nave.roll += nave.roll_velocity * dt;
+}
+
+/**
+ * Calcula la velocidad y posición de la nave según las fuerzas
+ * 
+ * @param {*} nave Nave de la que calcular la velocidad
+ * @param {*} dt Deltatime
+ */
+function calcular_movimiento_jugador(nave, dt) {
+	nave.velocity = add(nave.velocity, mult(dt, add(fuerza_motores(nave), calcular_gravedad(planetas, nave))));
+	nave.position = add(nave.position, mult(dt, nave.velocity));
+}
+
+function fuerza_motores(nave) {
+	let fuerza = vec3(0.0,0.0,0.0);
+	if (teclas_pulsadas.delante == 1) {
+        fuerza = mult(VEL_MOVIMIENTO, nave.eje_Z_rot);
+    }
+    if (teclas_pulsadas.atras == 1) {
+        fuerza = mult(-VEL_MOVIMIENTO, nave.eje_Z_rot);
+    }
+	if (teclas_pulsadas.arriba == 1) {
+        fuerza = mult(VEL_MOVIMIENTO, nave.eje_Y_rot);
+    }
+    if (teclas_pulsadas.abajo == 1) {
+        fuerza = mult(-VEL_MOVIMIENTO, nave.eje_Y_rot);
+    }
+    if (teclas_pulsadas.izquierda == 1) {
+        fuerza = mult(VEL_MOVIMIENTO, nave.eje_X_rot);
+    }
+    if (teclas_pulsadas.derecha == 1) {
+        fuerza = mult(-VEL_MOVIMIENTO, nave.eje_X_rot);
+    }
+	return fuerza;
 }
 
 function aplicarFuerzaOpuesta(dt, velocidad, vel_objetivo) {

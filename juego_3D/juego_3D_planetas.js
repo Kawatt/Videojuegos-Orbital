@@ -82,7 +82,7 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 		Matriz_Escalado: M_Escalado,
 
 		radius: radioPlaneta,
-		weight: 1.0,
+		mass: 100000,
 		position: vec3(0,0,0),
 	});
 

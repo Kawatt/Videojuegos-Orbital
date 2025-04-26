@@ -5,29 +5,37 @@
 * 
 */
 
-function calcular_gravedad(nave) {
+/**
+ * Calcula la gravedad que aplican los planetas a un objeto
+ * 
+ * Tanto los planetas como el objeto deben tener
+ * - position (vec3)
+ * - mass (float)
+ * 
+ * @param {*} planets Vector de planetas
+ * @param {*} object Objeto al que aplicar la gravedad
+ * @returns Fuerza que aplican los planetas al objeto
+ */
+function calcular_gravedad(planets, object) {
 	let gravedad = vec3(0.0,0.0,0.0);
-	if (teclas_pulsadas.delante == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, nave.eje_Z_rot);
+    const G = 6.67430e-11; // Constante gravitacional
+
+    for (let planet of planets) {
+        let d = subtract(planet.position, object.position);
+        let distance = length(d);
+
+        if (distance === 0) continue; // Evitar división por cero
+
+        let forceMagnitude = G * planet.mass * object.mass / dot(d, d);
+
+        let u = normalize(d);
+
+        // Fuerza individual
+        gravedad = add(gravedad, mult(forceMagnitude, u))
     }
-    if (teclas_pulsadas.atras == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, nave.eje_Z_rot);
-    }
-	if (teclas_pulsadas.arriba == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, nave.eje_Y_rot);
-    }
-    if (teclas_pulsadas.abajo == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, nave.eje_Y_rot);
-    }
-    if (teclas_pulsadas.izquierda == 1) {
-        gravedad = mult(VEL_MOVIMIENTO, nave.eje_X_rot);
-    }
-    if (teclas_pulsadas.derecha == 1) {
-        gravedad = mult(-VEL_MOVIMIENTO, nave.eje_X_rot);
-    }
-	// calculo solo del sol
-	//gravedad = add(gravedad, mult((VEL_MOVIMIENTO*0.1)/length(normalize(subtract(vec3(0,0,0), nave.position))), normalize(subtract(vec3(0,0,0), nave.position))))
-	return gravedad;
+    
+    console.log(gravedad)
+    return gravedad;
 }
 
 function colision_esferas(centro1, radio1, centro2, radio2){
