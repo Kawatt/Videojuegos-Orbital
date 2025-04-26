@@ -59,6 +59,30 @@ function start_hud() {
 	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
 	hud_ajustar_vel.textContent = "Velocidad Ajustada"
 	hud_ajustar_vel.style.display = 'none';
+
+	hud_aim = document.getElementById("aim");
+	//hud_aim.style.top = window.innerHeight / 2 + "px";
+    //hud_aim.style.left = window.innerWidth / 2 + "px";
+}
+
+
+
+function projectToScreen(position) {
+    let position4D = vec4(position[0], position[1], position[2], 1);
+	let behind = false;
+    
+	let P_camera = mult(transpose(view), position4D)
+	let P_clip = mult(transpose(projection), P_camera)
+	if (P_clip[3] < 0) { //Posición detrás de la cámara
+		P_clip = vec4(-P_clip[0],-P_clip[1],-P_clip[2],P_clip[3])
+		behind = true;
+    }
+	let P_ndc = vec3(P_clip[0]/P_clip[3], P_clip[1]/P_clip[3], P_clip[2]/P_clip[3]);
+	
+	let x = (P_ndc[0] * 0.5 + 0.5) * canvas.width
+	let y = (1 - (P_ndc[1] * 0.5 + 0.5)) * canvas.height
+
+    return { x, y, behind };
 }
 
 //----------------------------------------------------------------------------
@@ -126,6 +150,7 @@ var hud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
 var hud_ajustar_vel;
+var hud_aim;
 
 window.onload = function init() {
 	
@@ -169,7 +194,7 @@ window.onload = function init() {
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	// Set up camera	
-	eye = new vec3(0.0,0.0,0.0);
+	eye = INITIAL_POSITION;
 	target = vec3(0.0, 0.0, 0.0);
 	up =  vec3(0.0, 1.0, 0.0);
 	view = lookAt(eye,target,up);
@@ -177,13 +202,13 @@ window.onload = function init() {
 	// Establecer la proyeccion perspectiva por defecto
 	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 1000.0 );
 
-	gl.uniformMatrix4fv( programInfo.uniformLocations.projection, gl.FALSE, projection );
+	gl.uniformMatrix4fv(programInfo.uniformLocations.projection, gl.FALSE, projection);
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 	
 	window.addEventListener("keydown", keyDownHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
 	
-	createNaveEnemiga();
+	//createNaveEnemiga();
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -230,6 +255,17 @@ function update(dt) {
 	update_hud();
 
 	detectar_colisiones();
+
+	let projectedPosition = projectToScreen(planetas[1].position);
+
+	if (projectedPosition.behind) {
+		hud_aim.style.opacity = 0.5;
+	} else {
+		hud_aim.style.opacity = 1;
+	}
+
+	hud_aim.style.top = Math.max(20, Math.min(canvas.height-(hud_aim.height/2), projectedPosition.y)) + "px";
+	hud_aim.style.left = Math.max(20, Math.min(canvas.width-(hud_aim.width/2), projectedPosition.x)) + "px";
 
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];

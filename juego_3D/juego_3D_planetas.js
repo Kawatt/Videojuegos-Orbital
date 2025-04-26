@@ -103,4 +103,4 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotX, velRotY, velRotZ, r
 // Sol central
 generar_planeta(10, 100000, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
-generar_planeta(2, 1000, 0.0, 0.1, 0.0, 30, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
+generar_planeta(2, 1000, 0.0, 0.1, 0.0, 20, 0.2, ejeX, ejeZ, ejeY, 90, 30, colorsArrayPlanet);
