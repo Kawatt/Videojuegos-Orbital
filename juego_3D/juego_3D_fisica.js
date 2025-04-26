@@ -34,7 +34,6 @@ function calcular_gravedad(planets, object) {
         gravedad = add(gravedad, mult(forceMagnitude, u))
     }
     
-    console.log(gravedad)
     return gravedad;
 }
 
@@ -45,9 +44,11 @@ function colision_esferas(centro1, radio1, centro2, radio2){
 }
 
 function detectar_colisiones() {
-	if (colision_esferas(jugador.position, 1, vec3(0.0,0.0,0.0), 10)) {
-		reset_jugador();
-	}
+    planetas.forEach(function(planeta) {
+		if (colision_esferas(jugador.position, jugador.radius, planeta.position, planeta.radius)) {
+			reset_jugador();
+		}
+    });
 	naves.forEach(function(nave) {
 		if (colision_esferas(jugador.position, 1, nave.position, 1)) {
 			reset_jugador();

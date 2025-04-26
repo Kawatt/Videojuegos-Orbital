@@ -249,6 +249,26 @@ function update(dt) {
 		//nave.position = add(nave.position, mult(dt, nave.velocity));
 	}
 
+	for(let i=0; i < planetas.length; i++){
+		let planeta = planetas[i];
+
+		planeta.posRotOrbita += planeta.velRotOrbita;
+
+		// Calcular posición en el círculo (sin inclinación)
+		let anguloRad = radians(planeta.posRotOrbita);
+		let posOrbitaPlano = vec4(Math.cos(anguloRad) * planeta.radioOrbita, 0, Math.sin(anguloRad) * planeta.radioOrbita, 1.0);
+
+		// Aplicar inclinación de la órbita
+		let posInclinada = mult(planeta.matriz_inclinacion_orbita, posOrbitaPlano);
+
+		// Aplicar traslación (mover centro de órbita)
+		let posFinal = mult(planeta.matriz_traslacion_orbita, posInclinada);
+
+		// Guardar posición final
+		planeta.position = vec3(posFinal[0], posFinal[1], posFinal[2]);
+		
+	}
+
 	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
@@ -286,13 +306,13 @@ function render(dt) {
 	// Renderizado de planetas
 	for(let i=0; i < planetas.length; i++){
 		// Reset a origen
-		spheresToDraw[i].uniforms.u_model = translate(0.0, 0.0, 0.0);
+		spheresToDraw[i].uniforms.u_model = translate(planetas[i].position[0], planetas[i].position[1], planetas[i].position[2]);
 		
 		// Inclinacion de la orbita
-		spheresToDraw[i].uniforms.u_model =
+		/*spheresToDraw[i].uniforms.u_model =
 			mult(
 				spheresToDraw[i].uniforms.u_model,
-				planetas[i].Matriz_Inclinacion_Orbita
+				planetas[i].matriz_inclinacion_orbita
 			)
 		;
 
@@ -306,9 +326,9 @@ function render(dt) {
 		spheresToDraw[i].uniforms.u_model = 
 			mult(
 				spheresToDraw[i].uniforms.u_model,
-				planetas[i].Matriz_Traslacion_R_Orbita
+				planetas[i].matriz_traslacion_orbita
 			)
-		;
+		;*/
 
 		// Rotación sobre si mismo en los 3 ejes
 		let RMZ = rotate(planetas[i].posRotZMismo, ejeZ);

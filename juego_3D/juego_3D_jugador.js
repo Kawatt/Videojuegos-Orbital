@@ -27,7 +27,7 @@ var jugador = {
 	eje_Y_rot: vec3(0.0,1.0,0.0),
 	eje_Z_rot: vec3(0.0,0.0,1.0),
 
-	diameter: 1.5,
+	radius: 1.5,
 	mass: 100
 }
 

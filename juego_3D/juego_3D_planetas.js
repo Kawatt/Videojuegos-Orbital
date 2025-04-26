@@ -16,6 +16,7 @@ var planetas = [
  * ⚠️ **Restricción:** El eje `ejRot` **no puede ser igual** al eje `ejOrb` o `ejInc`.
  * 
  * @param {float} radioPlaneta - Tamaño del planeta.
+ * @param {float} masaPlaneta - Masa del planeta.
  * @param {float} velRotX - Velocidad de rotación en su eje X.
  * @param {float} velRotY - Velocidad de rotación en su eje Y.
  * @param {float} velRotZ - Velocidad de rotación en su eje Z.
@@ -27,7 +28,7 @@ var planetas = [
  * @param {float} incOrb - Inclinacion del eje sobre el que orbita
  * @param {float} incOrb2 - Inclinacion extra de la orbita
  */
-function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita, 
+function generar_planeta(radioPlaneta, masaPlaneta, velRotX, velRotY, velRotZ, radioOrbita, 
 	velOrbita, ejOrb, ejRot, ejInc, incOrb, incOrb2, arrayColor){
 	if (ejRot === ejOrb) {
 		throw new Error('⚠️ Los ejes ejRot y ejOrb no pueden ser iguales.');
@@ -77,12 +78,13 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 		velRotOrbita: velOrbita, // Velocidad rotacion en la orbita
 		posRotOrbita: 0.0, // Rotacion actual en la orbita
 
-		Matriz_Inclinacion_Orbita: M_Rot_Inclinacion,
-		Matriz_Traslacion_R_Orbita: M_Tras_R_Orb,
+		matriz_inclinacion_orbita: M_Rot_Inclinacion,
+		matriz_traslacion_orbita: M_Tras_R_Orb,
 		Matriz_Escalado: M_Escalado,
+		radioOrbita: radioOrbita,
 
 		radius: radioPlaneta,
-		mass: 100000,
+		mass: masaPlaneta,
 		position: vec3(0,0,0),
 	});
 
@@ -99,6 +101,6 @@ function generar_planeta(radioPlaneta, velRotX, velRotY, velRotZ, radioOrbita,
 }
 
 // Sol central
-generar_planeta(10, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
+generar_planeta(10, 100000, 0.0, 0.1, 0.0, 0, 0, ejeX, ejeY, ejeX, Math.random()*360, Math.random()*180, colorsArraySun);
 // Planeta que orbita
-generar_planeta(2, 0.0, 0.1, 0.0, 30, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
+generar_planeta(2, 1000, 0.0, 0.1, 0.0, 30, 0.1, ejeX, ejeZ, ejeX, 0, 0, colorsArrayPlanet);
