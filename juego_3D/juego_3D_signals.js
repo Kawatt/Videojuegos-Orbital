@@ -1,13 +1,12 @@
 /*
 * 
-* juego_3D_planetas.js
+* juego_3D_signals.js
 * Videojuegos (30262) - Curso 2024-2025
 * 
 */
 
 
-var signals = [
-];
+var signals = [];
 
 /**
  * Crea una señal.
@@ -63,8 +62,8 @@ function generar_signal(radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, incli
 		}, 
 		{
 			programInfo: programInfo,
-			pointsArray: pointsDisp, 
-			colorsArray: colorsDisp, 
+			pointsArray: pointsSignal, 
+			colorsArray: colorsSignal, 
 			uniforms: {
 			u_colorMult: [1.0, 1.0, 1.0, 1.0],
 			u_model: translate(0,0,0),
@@ -74,5 +73,3 @@ function generar_signal(radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, incli
 		signals
 	)
 }
-
-generar_signal(20.0, 0.02, ejeY, ejeZ, 45);

@@ -228,6 +228,7 @@ window.onload = function init() {
 	window.addEventListener("keyup", keyReleasedHandler);
 	
 	//createNaveEnemiga();
+	generar_signal(30.0, 0.02, ejeY, ejeZ, 45);
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -314,6 +315,23 @@ function update(dt) {
 		planeta.velocity = mult(planeta.vel_orbita, movvector)
 		
 	}
+
+	for(let i=0; i < signals.length; i++){
+		let signal = signals[i];
+
+		signal.pos_orbita += signal.vel_orbita * dt;
+
+		let pos = translate(0,0,0);
+		pos = mult(pos, signal.matriz_inclinacion_orbita);
+
+		let ROrb = rotate(signal.pos_orbita, signal.eje_orbita);
+		pos = mult(pos, ROrb);
+		pos = mult(pos, signal.matriz_traslacion_orbita);
+		
+		// Guardar posición final
+		signal.position = vec3(pos[12], pos[13], pos[14]);
+		
+	}
 }
 
 //----------------------------------------------------------------------------
@@ -364,6 +382,14 @@ function render(dt) {
 		// Escalado de tamaño
 		spheresToDraw[i].uniforms.u_model = 
 			mult(spheresToDraw[i].uniforms.u_model, planeta.matriz_escalado);
+	}
+
+	for(let i=0; i < signals.length; i++){
+		let signal = signals[i];
+		let uniforms = signal.model.uniforms;
+
+		// Colocar en posición
+		uniforms.u_model = translate(signal.position[0], signal.position[1], signal.position[2]);
 	}
 
 	// Renderizado de naves

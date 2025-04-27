@@ -206,3 +206,47 @@ function arrayColorPlanet() {
 	return ret;
 }
 var colorsArrayPlanet = arrayColorPlanet()
+
+
+// Disparos
+const signalVerts = [
+	[ 0.05, 0.05, 0.05, 1], //0
+	[ 0.05, 0.05,-0.05, 1], //1
+	[ 0.05,-0.05, 0.05, 1], //2
+	[ 0.05,-0.05,-0.05, 1], //3
+	[-0.05, 0.05, 0.05, 1], //4
+	[-0.05, 0.05,-0.05, 1], //5
+	[-0.05,-0.05, 0.05, 1], //6
+	[-0.05,-0.05,-0.05, 1], //7
+];
+
+const signalIndices = [	
+//Solid Cube - use TRIANGLES, starts at 0, 36 vertices
+	0,4,6, //front
+	0,6,2,
+	1,0,2, //right
+	1,2,3, 
+	5,1,3, //back
+	5,3,7,
+	4,5,7, //left
+	4,7,6,
+	4,0,1, //top
+	4,1,5,
+	6,7,3, //bottom
+	6,3,2,
+];
+
+const pointsSignal = [];
+for (let i=0; i < signalIndices.length; i++)
+{
+	pointsSignal.push(signalVerts[signalIndices[i]]);
+}
+
+const colorsSignal = [	
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+	white, white, white, white, white, white,
+];	
