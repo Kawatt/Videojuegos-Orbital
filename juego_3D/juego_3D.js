@@ -293,17 +293,14 @@ function update(dt) {
 	for(let i=0; i < planetas.length; i++){
 		let planeta = planetas[i];
 
-		planeta.posRotOrbita += planeta.velRotOrbita;
+		planeta.pos_orbita += planeta.vel_orbita * dt;
 
 		// Calcular posición en el círculo (sin inclinación)
-		let anguloRad = radians(planeta.posRotOrbita);
-		let posOrbitaPlano = vec4(Math.cos(anguloRad) * planeta.radioOrbita, 0, Math.sin(anguloRad) * planeta.radioOrbita, 1.0);
-
-		// Aplicar inclinación de la órbita
-		let posInclinada = mult(planeta.matriz_inclinacion_orbita, posOrbitaPlano);
+		let anguloRad = radians(planeta.pos_orbita);
+		let posOrbitaPlano = vec4(Math.cos(anguloRad) * planeta.radio_orbita, 0, Math.sin(anguloRad) * planeta.radio_orbita, 1.0);
 
 		// Aplicar traslación (mover centro de órbita)
-		let posFinal = mult(planeta.matriz_traslacion_orbita, posInclinada);
+		let posFinal = mult(planeta.matriz_traslacion_orbita, posOrbitaPlano);
 
 		// Guardar posición final
 		planeta.position = vec3(posFinal[0], posFinal[1], posFinal[2]);
@@ -373,26 +370,14 @@ function render(dt) {
 			)
 		;*/
 
-		// Rotación sobre si mismo en los 3 ejes
-		let RMZ = rotate(planetas[i].posRotZMismo, ejeZ);
+		// Rotación sobre si mismo
+		let RM = rotate(planetas[i].pos_rot_mismo, planetas[i].eje_rot_mismo);
 		spheresToDraw[i].uniforms.u_model =
-			mult(spheresToDraw[i].uniforms.u_model, RMZ)
-		;
-
-		let RMY = rotate(planetas[i].posRotYMismo, ejeY);
-		spheresToDraw[i].uniforms.u_model =
-			mult(spheresToDraw[i].uniforms.u_model, RMY)
-		;
-
-		let RMX = rotate(planetas[i].posRotXMismo, ejeX);
-		spheresToDraw[i].uniforms.u_model =
-			mult(spheresToDraw[i].uniforms.u_model, RMX)
-		;
+			mult(spheresToDraw[i].uniforms.u_model, RM);
 		
 		// Escalado de tamaño
 		spheresToDraw[i].uniforms.u_model = 
-			mult(spheresToDraw[i].uniforms.u_model, planetas[i].Matriz_Escalado)
-		;
+			mult(spheresToDraw[i].uniforms.u_model, planetas[i].matriz_escalado);
 	}
 
 	// Renderizado de naves
@@ -434,10 +419,7 @@ function render(dt) {
     });
     
 	for (let i=0; i < planetas.length; i++) {
-		planetas[i].posRotOrbita += planetas[i].velRotOrbita
-		planetas[i].posRotXMismo += planetas[i].velRotXMismo
-		planetas[i].posRotYMismo += planetas[i].velRotYMismo
-		planetas[i].posRotZMismo += planetas[i].velRotZMismo
+		planetas[i].pos_rot_mismo += planetas[i].vel_rot_mismo * dt
 	}
 	
 }
