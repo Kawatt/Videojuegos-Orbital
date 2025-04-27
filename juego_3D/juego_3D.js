@@ -43,11 +43,11 @@ function remove_model_and_object(models, objects, i) {
 /**
  * Actualiza los contenidos del HUD
  */
-function update_hud(dt) {
+function update_hud() {
 	// Distancia al astro elegido
-	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(4) + " m"
+	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(2) + " m"
 	// Velocidad a la que se está acercando al astro elegido
-	hud_velocity_target.textContent = 1000*length(subtract(jugador.velocity, selected_planet.velocity)).toFixed(4) + " m/s"
+	hud_velocity_target.textContent = (1000*length(subtract(jugador.velocity, selected_planet.velocity))).toFixed(2) + " m/s"
 
 	//hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
@@ -271,7 +271,7 @@ function update(dt) {
 
 	handle_disparos(dt, jugador);
 	
-	update_hud(dt);
+	update_hud();
 
 	detectar_colisiones();
 

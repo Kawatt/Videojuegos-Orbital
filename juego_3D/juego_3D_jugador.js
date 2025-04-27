@@ -28,8 +28,8 @@ var jugador = {
 	eje_Y_rot: vec3(0.0,1.0,0.0),
 	eje_Z_rot: vec3(0.0,0.0,1.0),
 
-	radius: 1.5,
-	mass: 0
+	radius: JUGADOR_RADIO,
+	mass: JUGADOR_MASA
 }
 
 function reset_jugador() {
