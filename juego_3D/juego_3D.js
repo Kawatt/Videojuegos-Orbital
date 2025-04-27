@@ -44,8 +44,8 @@ function remove_model_and_object(models, objects, i) {
  * Actualiza los contenidos del HUD
  */
 function update_hud() {
-	hud_distance_center.textContent = length(jugador.position).toFixed(4) + " m"
-	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(jugador.position))).toFixed(4) + " m/s"
+	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(4) + " m"
+	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(subtract(jugador.position, selected_planet.position)))).toFixed(4) + " m/s"
 	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
@@ -60,9 +60,11 @@ function start_hud() {
 	hud_ajustar_vel.textContent = "Velocidad Ajustada"
 	hud_ajustar_vel.style.display = 'none';
 
-	hud_aim = document.getElementById("aim");
-	//hud_aim.style.top = window.innerHeight / 2 + "px";
-    //hud_aim.style.left = window.innerWidth / 2 + "px";
+	hud_mira = document.getElementById("mira");
+	hud_mira.style.top = window.innerHeight / 2 + "px";
+    hud_mira.style.left = window.innerWidth / 2 + "px";
+
+	hud_orient = document.getElementById("orientador");
 }
 
 
@@ -83,6 +85,19 @@ function projectToScreen(position) {
 	let y = (1 - (P_ndc[1] * 0.5 + 0.5)) * canvas.height
 
     return { x, y, behind };
+}
+
+function render_planet_selector() {
+	let projectedPosition = projectToScreen(selected_planet.position);
+
+	if (projectedPosition.behind) {
+		hud_orient.style.opacity = 0.5;
+	} else {
+		hud_orient.style.opacity = 1;
+	}
+
+	hud_orient.style.top = Math.max(20, Math.min(canvas.height-(hud_orient.height/2), projectedPosition.y)) + "px";
+	hud_orient.style.left = Math.max(20, Math.min(canvas.width-(hud_orient.width/2), projectedPosition.x)) + "px";
 }
 
 //----------------------------------------------------------------------------
@@ -150,7 +165,8 @@ var hud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
 var hud_ajustar_vel;
-var hud_aim;
+var hud_mira;
+var hud_orient;
 
 window.onload = function init() {
 	
@@ -256,17 +272,6 @@ function update(dt) {
 
 	detectar_colisiones();
 
-	let projectedPosition = projectToScreen(planetas[1].position);
-
-	if (projectedPosition.behind) {
-		hud_aim.style.opacity = 0.5;
-	} else {
-		hud_aim.style.opacity = 1;
-	}
-
-	hud_aim.style.top = Math.max(20, Math.min(canvas.height-(hud_aim.height/2), projectedPosition.y)) + "px";
-	hud_aim.style.left = Math.max(20, Math.min(canvas.width-(hud_aim.width/2), projectedPosition.x)) + "px";
-
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
 
@@ -338,6 +343,8 @@ function render(dt) {
 	
 	view = lookAt(eye, target, up);
     gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
+
+	render_planet_selector()
 
 	// Renderizado de planetas
 	for(let i=0; i < planetas.length; i++){

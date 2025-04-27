@@ -6,6 +6,20 @@
 */
 
 var vuelo_sencillo = 0; // la nave ajusta constantemente la velocidad si es 1
+var selected_planet = planetas[0]
+
+function seleccionar_planeta() {
+	var ant = 100000000000000;
+	for (let planeta of planetas) {
+		let interseccion = intersecta(jugador.position, jugador.eje_Z_rot, planeta.position, planeta.radius);
+		if (interseccion.intersecta) {
+			if (interseccion.dist < ant) {
+				selected_planet = planeta
+				ant = interseccion.dist
+			}
+		}
+	}
+}
 
 var jugador = {
 
@@ -182,7 +196,8 @@ function keyDownHandler(event) {
 			break;
 		case "f":
 		case "F":
-			teclas_pulsadas.disparar = 1;
+			//teclas_pulsadas.disparar = 1;
+			seleccionar_planeta()
 			break;
 		case "r":
 		case "R":
@@ -365,7 +380,7 @@ function reducirGiro(dt, factor, valor) {
  */
 function mover_camara(dt) {
 	if (teclas_pulsadas.parar == 1) {
-        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, vec3(0,0,0));
+        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, selected_planet.position);
     }
 	if (teclas_pulsadas.girder == 1) {
 		if (vuelo_sencillo == 1) {

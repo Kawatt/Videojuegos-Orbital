@@ -62,33 +62,33 @@ function detectar_colisiones() {
     });
 }
 
-/*function intersecta(punto, direccion, centro, radio) {
-	// Variables del origen y dirección
-    const [ox, oy, oz] = punto;
-    const [dx, dy, dz] = direccion;
-    const [cx, cy, cz] = centro;
+/**
+ * Devuelve la distancia del rayo a la esfera si intersecta
+ * 
+ * @param {vec3} origen Origen del rayo
+ * @param {vec3} direccion Dirección del rayo
+ * @param {vec3} centro Centro de la esfera
+ * @param {vec3} radio Radio de la esfera
+ * @returns Un diccionario donde intersecta es un booleano indicando si ha intersectado y dist es la distancia al punto de intersección
+ */
+function intersecta(origen, direccion, centro, radio) {
+    let OC = subtract(origen, centro)
+    let a = dot(direccion, direccion)
+    let b = 2 * dot(OC, direccion)
+    let c = dot(OC, OC) - radio*radio
     
-    // Coeficientes de la ecuación cuadrática
-    const A = dx * dx + dy * dy + dz * dz;
-    const B = 2 * (dx * (ox - cx) + dy * (oy - cy) + dz * (oz - cz));
-    const C = (ox - cx) ** 2 + (oy - cy) ** 2 + (oz - cz) ** 2 - radio ** 2;
-    
-    // Discriminante
-    const discriminante = B * B - 4 * A * C;
+    let discriminante = b*b - 4*a*c
     
     if (discriminante < 0) {
-        // No hay intersección
-        return null;
+        return {intersecta:false, dist:0}  // no intersection
     }
-    
-    // Soluciones
-    const t1 = (-B + Math.sqrt(discriminante)) / (2 * A);
-    const t2 = (-B - Math.sqrt(discriminante)) / (2 * A);
-    
-    // Puntos de intersección
-    const p1 = [ox + t1 * dx, oy + t1 * dy, oz + t1 * dz];
-    const p2 = [ox + t2 * dx, oy + t2 * dy, oz + t2 * dz];
-    
-    // Si hay dos soluciones, devuelve ambos puntos
-    return discriminante === 0;
-}*/
+    else {
+        let sqrt_disc = Math.sqrt(discriminante)
+        let t1 = (-b - sqrt_disc) / (2*a)
+        let t2 = (-b + sqrt_disc) / (2*a)
+        
+        if (t1 >= 0) return {intersecta:true, dist:t1}
+        else if (t2 >= 0) return {intersecta:true, dist:t2}
+        else return {intersecta:false, dist:0}
+    }
+}

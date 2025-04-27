@@ -40,7 +40,15 @@
             text-align: center;
         }
 
-        #aim {
+        #orientador {
+            position: absolute;
+            z-index: 2;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #mira {
             position: absolute;
             z-index: 2;
             top: 50%;
@@ -100,7 +108,8 @@
 
 <body>
     <!-- El canvas, que permite renderizar con WebGL -->
-    <img id="aim" src="../sources/target.png" width="64" height="64" />
+    <img id="orientador" src="../sources/target.png" width="64" height="64" />
+    <img id="mira" src="../sources/mira.png" width="64" height="64" />
     <div id="hud_distance" width="1024" height="512"> </div>
     <div id="hud_velocity_target" width="1024" height="512"> </div>
     <div id="hud_velocity" width="1024" height="512"> </div>
