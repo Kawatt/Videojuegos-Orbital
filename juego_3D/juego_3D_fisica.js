@@ -49,7 +49,13 @@ function detectar_colisiones() {
 			reset_jugador();
 		}
     });
-	naves.forEach(function(nave) {
+    signals.forEach(function(signal, i) {
+		if (colision_esferas(jugador.position, 1, signal.position, 1)) {
+			reset_jugador();
+            remove_model_and_object(objectsToDraw, signals, i);
+		}
+    });
+	/*naves.forEach(function(nave) {
 		if (colision_esferas(jugador.position, 1, nave.position, 1)) {
 			reset_jugador();
 		}
@@ -59,7 +65,7 @@ function detectar_colisiones() {
 			remove_model_and_object(objectsToDraw, naves, 0)
 			remove_model_and_object(objectsToDraw, balls, i)
 		}}
-    });
+    });*/
 }
 
 /**
