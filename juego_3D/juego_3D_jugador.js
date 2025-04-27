@@ -360,7 +360,6 @@ function aplicarFuerzaOpuesta(dt, velocidad, vel_objetivo) {
 	}
 	
 	const fuerzaOpuesta = mult(VEL_MOVIMIENTO * dt, normalize(velOPuesta));
-	
     return add(velocidad, fuerzaOpuesta);
 }
 
@@ -380,7 +379,7 @@ function reducirGiro(dt, factor, valor) {
  */
 function mover_camara(dt) {
 	if (teclas_pulsadas.parar == 1) {
-        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, selected_planet.position);
+        jugador.velocity = aplicarFuerzaOpuesta(dt, jugador.velocity, selected_planet.velocity);
     }
 	if (teclas_pulsadas.girder == 1) {
 		if (vuelo_sencillo == 1) {

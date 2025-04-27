@@ -43,10 +43,15 @@ function remove_model_and_object(models, objects, i) {
 /**
  * Actualiza los contenidos del HUD
  */
-function update_hud() {
+function update_hud(dt) {
 	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(4) + " m"
-	hud_velocity_target.textContent = (-dot(jugador.velocity, normalize(subtract(jugador.position, selected_planet.position)))).toFixed(4) + " m/s"
+	// Velocidad a la que se está acercando al astro elegido
+	let pos_rel = subtract(jugador.position, selected_planet.position)
+	let vel_rel = subtract(jugador.velocity, selected_planet.velocity)
+	//hud_velocity_target.textContent = (-dot(vel_rel,pos_rel)/dot(pos_rel,pos_rel)).toFixed(4) + " m/s"
+	hud_velocity_target.textContent = length(subtract(jugador.velocity, selected_planet.velocity)).toFixed(4) + " m/s"
 	hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
+	//console.log(selected_planet.velocity)
 }
 
 /**
@@ -303,7 +308,12 @@ function update(dt) {
 		pos = mult(pos, planeta.matriz_traslacion_orbita);
 		
 		// Guardar posición final
+		let oldpos = planeta.position
 		planeta.position = vec3(pos[12], pos[13], pos[14]);
+		let movvector = subtract(planeta.position, planeta.oldpos)
+		planeta.oldpos = oldpos
+		// Calcular velocidad global del planeta
+		planeta.velocity = mult(planeta.vel_orbita, movvector)
 		
 	}
 }

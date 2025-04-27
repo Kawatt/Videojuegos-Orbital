@@ -45,6 +45,8 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 	planetas.push({
 
 		position: vec3(0,0,0),
+		oldpos: vec3(0,0,0),
+		velocity: vec3(0,0,0),
 
 		vel_rot_mismo: velRotMismo,
 		eje_rot_mismo: ejeRotMismo,
