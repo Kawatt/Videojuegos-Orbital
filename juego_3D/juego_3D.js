@@ -295,19 +295,17 @@ function update(dt) {
 
 		planeta.pos_orbita += planeta.vel_orbita * dt;
 
-		// Calcular posición en el círculo (sin inclinación)
-		let anguloRad = radians(planeta.pos_orbita);
-		let posOrbitaPlano = vec4(Math.cos(anguloRad) * planeta.radio_orbita, 0, Math.sin(anguloRad) * planeta.radio_orbita, 1.0);
+		let pos = translate(0,0,0);
+		pos = mult(pos, planeta.matriz_inclinacion_orbita);
 
-		// Aplicar traslación (mover centro de órbita)
-		let posFinal = mult(planeta.matriz_traslacion_orbita, posOrbitaPlano);
-
+		let ROrb = rotate(planeta.pos_orbita, planeta.eje_orbita);
+		pos = mult(pos, ROrb);
+		pos = mult(pos, planeta.matriz_traslacion_orbita);
+		
 		// Guardar posición final
-		planeta.position = vec3(posFinal[0], posFinal[1], posFinal[2]);
+		planeta.position = vec3(pos[12], pos[13], pos[14]);
 		
 	}
-
-	//console.log("Pos: " + jugador.position + ", Vel: " + jugador.velocity + ", Grav: " + calcular_gravedad());
 }
 
 //----------------------------------------------------------------------------
@@ -345,39 +343,19 @@ function render(dt) {
 
 	// Renderizado de planetas
 	for(let i=0; i < planetas.length; i++){
+		let planeta = planetas[i];
+
 		// Reset a origen
-		spheresToDraw[i].uniforms.u_model = translate(planetas[i].position[0], planetas[i].position[1], planetas[i].position[2]);
-		
-		// Inclinacion de la orbita
-		/*spheresToDraw[i].uniforms.u_model =
-			mult(
-				spheresToDraw[i].uniforms.u_model,
-				planetas[i].matriz_inclinacion_orbita
-			)
-		;
-
-		// Desplazamiento en la orbita
-		let ROrb = rotate(planetas[i].posRotOrbita, planetas[i].ejeRotOrbita);
-		spheresToDraw[i].uniforms.u_model = 
-			mult(spheresToDraw[i].uniforms.u_model, ROrb)
-		;
-
-		// Traslación
-		spheresToDraw[i].uniforms.u_model = 
-			mult(
-				spheresToDraw[i].uniforms.u_model,
-				planetas[i].matriz_traslacion_orbita
-			)
-		;*/
+		spheresToDraw[i].uniforms.u_model = translate(planeta.position[0], planeta.position[1], planeta.position[2]);
 
 		// Rotación sobre si mismo
-		let RM = rotate(planetas[i].pos_rot_mismo, planetas[i].eje_rot_mismo);
+		let RM = rotate(planeta.pos_rot_mismo, planeta.eje_rot_mismo);
 		spheresToDraw[i].uniforms.u_model =
 			mult(spheresToDraw[i].uniforms.u_model, RM);
 		
 		// Escalado de tamaño
 		spheresToDraw[i].uniforms.u_model = 
-			mult(spheresToDraw[i].uniforms.u_model, planetas[i].matriz_escalado);
+			mult(spheresToDraw[i].uniforms.u_model, planeta.matriz_escalado);
 	}
 
 	// Renderizado de naves

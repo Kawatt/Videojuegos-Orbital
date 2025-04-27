@@ -10,24 +10,33 @@ var spheresToDraw = [];
 var planetas = [
 ];
 
-/**
- * Crea un planeta.
- * 
- * @param {float} radioPlaneta - Tamaño del planeta.
- * @param {float} masaPlaneta - Masa del planeta.
- * @param {float} velRotMismo - Velocidad de rotación sobre si mismo.
- * @param {vec3} ejeRotMismo - Eje de rotación sobre si mismo.
- * @param {float} radioOrbita - Distancia al centro del sistema.
- * @param {float} velOrbita - Velocidad con la que orbita.
- * @param {vec3} ejeOrbita - Eje a traves del cual se traslada el planeta para colocarlo en la orbita.
- * @param {array} arrayColor - Colores del planeta
- */
-function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, radioOrbita, velOrbita, ejeOrbita, arrayColor){
+function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, inclinacion, arrayColor){
+
+	if (ejeOrbita === ejeInclinacion) {
+		throw new Error('⚠️ Los ejes ejeOrbita y ejeInclinacion no pueden ser iguales.');
+	}
+
+	// Inclinacion de la orbita
+	let ejeDesplazamiento = cross(ejeOrbita, ejeInclinacion)
+
+	let RInc = rotate(0, ejeDesplazamiento);
+	let ejeInclinacionRotado =
+		mult(RInc, vec4(ejeInclinacion[0], ejeInclinacion[1], ejeInclinacion[2], 0.0));
+
+	let M_Rot_Inclinacion = 
+		rotate(
+			inclinacion, // Inclinacion de la orbita
+			vec3(
+				ejeInclinacionRotado[0],
+				ejeInclinacionRotado[1],
+				ejeInclinacionRotado[2]
+			)
+		);
 
 	let M_Tras_R_Orb = translate(
-		ejeOrbita[0] * radioOrbita,
-		ejeOrbita[1] * radioOrbita,
-		ejeOrbita[2] * radioOrbita
+		ejeDesplazamiento[0] * radioOrbita,
+		ejeDesplazamiento[1] * radioOrbita,
+		ejeDesplazamiento[2] * radioOrbita
 	);
 
 	// Escalado de tamaño
@@ -48,6 +57,7 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 
 		// Matrices precalculadas
 		matriz_traslacion_orbita: M_Tras_R_Orb,
+		matriz_inclinacion_orbita: M_Rot_Inclinacion,
 		matriz_escalado: M_Escalado,
 
 		radius: radioPlaneta,
@@ -70,7 +80,7 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 generar_planeta(
 	10, 100000, // radio, masa
 	0.01, ejeZ, // Rotación sobre si mismo: vel, eje
-	0.0, 0.0, vec3(0,0,0), // Rotación sobre orbita: radio, vel, eje, 
+	0.0, 0.0, ejeY, ejeX, 0, // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
 	colorsArraySun
 );
 
@@ -78,6 +88,6 @@ generar_planeta(
 generar_planeta(
 	2, 1000, // radio, masa
 	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
-	20.0, 0.02, ejeY, // Rotación sobre orbita: radio, vel, eje, 
+	20.0, 0.02, ejeY, ejeZ, 45, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
 	colorsArrayPlanet
 );
