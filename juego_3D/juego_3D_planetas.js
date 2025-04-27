@@ -103,9 +103,9 @@ generar_planeta(
 );
 
 // Planetas que orbitan
-generar_planeta(
+/*generar_planeta(
 	2, 1000, // radio, masa
 	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
 	20.0, 0.02, ejeY, ejeZ, 45, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
 	colorsArrayPlanet
-);
+);*/

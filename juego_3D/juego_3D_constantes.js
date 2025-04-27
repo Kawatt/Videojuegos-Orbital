@@ -6,7 +6,7 @@
 */
 
 const JUGADOR_RADIO = 1.5;
-const JUGADOR_MASA = 0;
+const JUGADOR_MASA = 10;
 const ESCALA = 0.00001;
 const VEL_MOVIMIENTO = 0.5 * ESCALA;
 const VEL_GIRAR = 8 * ESCALA;

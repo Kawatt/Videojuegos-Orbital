@@ -47,7 +47,9 @@ function update_hud() {
 	// Distancia al astro elegido
 	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(2) + " m"
 	// Velocidad a la que se está acercando al astro elegido
-	hud_velocity_target.textContent = (1000*length(subtract(jugador.velocity, selected_planet.velocity))).toFixed(2) + " m/s"
+	let vel_rel = subtract(jugador.velocity, selected_planet.velocity)
+	let pos_rel = subtract(jugador.position, selected_planet.position)
+	hud_velocity_target.textContent = (1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(2) + " m/s"
 
 	//hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }

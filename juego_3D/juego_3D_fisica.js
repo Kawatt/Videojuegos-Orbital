@@ -51,8 +51,8 @@ function detectar_colisiones() {
     });
     signals.forEach(function(signal, i) {
 		if (colision_esferas(jugador.position, 1, signal.position, 1)) {
-			reset_jugador();
             remove_model_and_object(objectsToDraw, signals, i);
+            console.log("Señal obtenida")
 		}
     });
 	/*naves.forEach(function(nave) {
