@@ -9,6 +9,17 @@
 var signals = [
 ];
 
+/**
+ * Crea una señal.
+ * 
+ * ⚠️ **Restricción:** El eje `ejRot` **no puede ser igual** al eje `ejOrb` o `ejInc`.
+ * 
+ * @param {float} radioOrbita - Distancia al centro del sistema.
+ * @param {float} velOrbita - Velocidad de rotación alrededor del centro del sistema.
+ * @param {vec3} ejeOrbita - Eje sobre el que orbita el planeta
+ * @param {vec3} ejeInclinacion - Eje sobre el que se inclina la orbita
+ * @param {float} inclinacion - Inclinacion del eje sobre el que orbita
+ */
 function generar_signal(radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, inclinacion){
 
 	if (ejeOrbita === ejeInclinacion) {

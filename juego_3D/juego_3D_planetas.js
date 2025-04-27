@@ -10,6 +10,22 @@ var spheresToDraw = [];
 var planetas = [
 ];
 
+/**
+ * Crea un planeta.
+ * 
+ * ⚠️ **Restricción:** El eje `ejRot` **no puede ser igual** al eje `ejOrb` o `ejInc`.
+ * 
+ * @param {float} radioPlaneta - Tamaño del planeta.
+ * @param {float} masaPlaneta - Masa del planeta.
+ * @param {float} velRotMismo - Velocidad de rotación sobre si mismo.
+ * @param {vec3} ejeRotMismo - Eje de rotación sobre si mismo.
+ * @param {float} radioOrbita - Distancia al centro del sistema.
+ * @param {float} velOrbita - Velocidad de rotación alrededor del centro del sistema.
+ * @param {vec3} ejeOrbita - Eje sobre el que orbita el planeta
+ * @param {vec3} ejeInclinacion - Eje sobre el que se inclina la orbita
+ * @param {float} inclinacion - Inclinacion del eje sobre el que orbita
+ * @param {float} arrayColor - Color del planeta
+ */
 function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, inclinacion, arrayColor){
 
 	if (ejeOrbita === ejeInclinacion) {
