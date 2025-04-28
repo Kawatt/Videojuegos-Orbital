@@ -73,3 +73,37 @@ function generar_signal(radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, incli
 		signals
 	)
 }
+
+function generar_signal_aleatoria() {
+	let rand = Math.floor(Math.random()*3)
+	let rand2 = Math.floor(Math.random()*2)
+	let ejOrb
+	let ejInc
+	if (rand == 1) {
+		ejOrb = ejeX
+		if (rand2 == 1) {
+			ejInc = ejeY
+		} else {
+			ejInc = ejeZ
+		}
+	} else if (rand == 2) {
+		ejOrb = ejeY
+		if (rand2 == 1) {
+			ejInc = ejeX
+		} else {
+			ejInc = ejeZ
+		}
+	} else {
+		ejOrb = ejeZ
+		if (rand2 == 1) {
+			ejInc = ejeY
+		} else {
+			ejInc = ejeX
+		}
+	}
+	let radio = (Math.random()*40)+planetas[0].radius;
+	let vel_orb = Math.random()*0.09+0.01;
+	let incl = Math.random()*360;
+	generar_signal(radio, vel_orb, ejOrb, ejInc, incl);
+	console.log("Generada señal con orbita de radio " + radio + " y velocidad orbital " + vel_orb + ".\n Orbitando sobre el eje " + ejOrb + " con inclinacion " + incl + " sobre el eje " + ejInc)
+}

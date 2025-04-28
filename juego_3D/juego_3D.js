@@ -51,6 +51,13 @@ function update_hud() {
 	let pos_rel = subtract(jugador.position, selected_planet.position)
 	hud_velocity_target.textContent = (1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(2) + " m/s"
 
+	if (hide_signal_obtenida > 0) {
+		hud_signal_obtenida.style.opacity = 1-(1-hide_signal_obtenida/SIGNAL_OBTENIDA_MSG_TIME);
+		hide_signal_obtenida--;
+	} else {
+		hud_signal_obtenida.style.display = 'none';
+	}
+
 	//hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
@@ -64,6 +71,9 @@ function start_hud() {
 	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
 	hud_ajustar_vel.textContent = "Velocidad Ajustada"
 	hud_ajustar_vel.style.display = 'none';
+	hud_signal_obtenida = document.getElementById("hud_signal_obtenida");
+	hud_signal_obtenida.textContent = "Señal Obtenida"
+	hud_signal_obtenida.style.display = 'none';
 
 	hud_mira = document.getElementById("mira");
 	hud_mira.style.top = window.innerHeight / 2 + "px";
@@ -170,8 +180,12 @@ var hud_distance_center;
 var hud_velocity_target;
 var hud_velocity;
 var hud_ajustar_vel;
+var hud_signal_obtenida;
 var hud_mira;
 var hud_orient;
+
+
+var hide_signal_obtenida = 0;
 
 window.onload = function init() {
 	
@@ -230,7 +244,8 @@ window.onload = function init() {
 	window.addEventListener("keyup", keyReleasedHandler);
 	
 	//createNaveEnemiga();
-	generar_signal(30.0, 0.02, ejeY, ejeZ, 45);
+	//generar_signal(30.0, 0.02, ejeY, ejeZ, 45);
+	generar_signal_aleatoria();
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);

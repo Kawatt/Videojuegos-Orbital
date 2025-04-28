@@ -52,7 +52,10 @@ function detectar_colisiones() {
     signals.forEach(function(signal, i) {
 		if (colision_esferas(jugador.position, 1, signal.position, 1)) {
             remove_model_and_object(objectsToDraw, signals, i);
-            console.log("Señal obtenida")
+            generar_signal_aleatoria();
+            hud_signal_obtenida.style.display = 'inline';
+            hide_signal_obtenida = SIGNAL_OBTENIDA_MSG_TIME
+            console.log("Señal obtenida");
 		}
     });
 	/*naves.forEach(function(nave) {
