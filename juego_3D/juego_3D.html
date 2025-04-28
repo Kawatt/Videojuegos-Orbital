@@ -19,13 +19,15 @@
             font-family: 'Courier New', Courier, monospace;
             font-weight:500;
         }
-        #hud_velocity {
-            z-index: 1;
+        #hud_points {
+            z-index: 3;
             top: 0;
             left: 0;
             color: aqua;
             font-size: x-large;
-            display: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+            float: right;
         }
         #hud_ajustar_vel {
             position: absolute;
@@ -123,9 +125,9 @@
     <!-- El canvas, que permite renderizar con WebGL -->
     <img id="orientador" src="../sources/target.png" width="64" height="64" />
     <img id="mira" src="../sources/mira.png" width="64" height="64" />
+    <div id="hud_points" width="1024" height="512"> </div>
     <div id="hud_distance" width="1024" height="512"> </div>
     <div id="hud_velocity_target" width="1024" height="512"> </div>
-    <div id="hud_velocity" width="1024" height="512"> </div>
     <div id="hud_ajustar_vel" width="1024" height="512"> </div>
     <div id="hud_signal_obtenida" width="1024" height="512"> </div>
     <canvas id="gl-canvas" width="1024" height="512">

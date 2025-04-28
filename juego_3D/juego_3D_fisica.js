@@ -54,7 +54,8 @@ function detectar_colisiones() {
             remove_model_and_object(objectsToDraw, signals, i);
             generar_signal_aleatoria();
             hud_signal_obtenida.style.display = 'inline';
-            hide_signal_obtenida = SIGNAL_OBTENIDA_MSG_TIME
+            hide_signal_obtenida = SIGNAL_OBTENIDA_MSG_TIME;
+            signals_obtenidas++;
             console.log("Señal obtenida");
 		}
     });

@@ -50,6 +50,8 @@ function update_hud() {
 	let vel_rel = subtract(jugador.velocity, selected_planet.velocity)
 	let pos_rel = subtract(jugador.position, selected_planet.position)
 	hud_velocity_target.textContent = (100*1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(0) + " m/s"
+	// Puntuación
+	hud_points.textContent = "Señales obtenidas: " + signals_obtenidas;
 
 	if (hide_signal_obtenida > 0) {
 		hud_signal_obtenida.style.opacity = 1-(1-hide_signal_obtenida/SIGNAL_OBTENIDA_MSG_TIME);
@@ -57,8 +59,6 @@ function update_hud() {
 	} else {
 		hud_signal_obtenida.style.display = 'none';
 	}
-
-	//hud_velocity.textContent = "Velocidad total: " + length(jugador.velocity).toFixed(4)
 }
 
 /**
@@ -67,13 +67,13 @@ function update_hud() {
 function start_hud() {
 	hud_distance_center = document.getElementById("hud_distance");
 	hud_velocity_target = document.getElementById("hud_velocity_target");
-	hud_velocity = document.getElementById("hud_velocity");
 	hud_ajustar_vel = document.getElementById("hud_ajustar_vel");
-	hud_ajustar_vel.textContent = "Velocidad Ajustada"
+	hud_ajustar_vel.textContent = "Velocidad Ajustada";
 	hud_ajustar_vel.style.display = 'none';
 	hud_signal_obtenida = document.getElementById("hud_signal_obtenida");
-	hud_signal_obtenida.textContent = "Señal Obtenida"
+	hud_signal_obtenida.textContent = "Señal Obtenida";
 	hud_signal_obtenida.style.display = 'none';
+	hud_points = document.getElementById("hud_points");
 
 	hud_mira = document.getElementById("mira");
 	hud_mira.style.top = window.innerHeight / 2 + "px";
@@ -178,7 +178,7 @@ var canvas;
 // HUD
 var hud_distance_center;
 var hud_velocity_target;
-var hud_velocity;
+var hud_points;
 var hud_ajustar_vel;
 var hud_signal_obtenida;
 var hud_mira;
@@ -186,6 +186,7 @@ var hud_orient;
 
 
 var hide_signal_obtenida = 0;
+var signals_obtenidas = 0;
 
 window.onload = function init() {
 	
