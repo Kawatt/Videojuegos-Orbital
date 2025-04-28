@@ -50,7 +50,7 @@ function detectar_colisiones() {
 		}
     });
     signals.forEach(function(signal, i) {
-		if (colision_esferas(jugador.position, 1, signal.position, 1)) {
+		if (colision_esferas(jugador.position, jugador.radius, signal.position, 4)) {
             remove_model_and_object(objectsToDraw, signals, i);
             generar_signal_aleatoria();
             hud_signal_obtenida.style.display = 'inline';
