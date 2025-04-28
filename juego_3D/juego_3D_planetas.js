@@ -26,7 +26,7 @@ var planetas = [
  * @param {float} inclinacion - Inclinacion del eje sobre el que orbita
  * @param {float} arrayColor - Color del planeta
  */
-function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, inclinacion, arrayColor){
+function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, radioOrbita, velOrbita, ejeOrbita, ejeInclinacion, inclinacion, posInit, arrayColor){
 
 	if (ejeOrbita === ejeInclinacion) {
 		throw new Error('⚠️ Los ejes ejeOrbita y ejeInclinacion no pueden ser iguales.');
@@ -71,7 +71,7 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 		radio_orbita: radioOrbita,
 		vel_orbita: velOrbita,
 		eje_orbita: ejeOrbita,
-		pos_orbita: 0.0,
+		pos_orbita: posInit,
 
 		// Matrices precalculadas
 		matriz_traslacion_orbita: M_Tras_R_Orb,
@@ -96,16 +96,49 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 
 // Sol central
 generar_planeta(
-	10, 100000, // radio, masa
+	20, 100000, // radio, masa
 	0.01, ejeZ, // Rotación sobre si mismo: vel, eje
-	0.0, 0.0, ejeY, ejeX, 0, // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	0.0, 0.0, ejeY, ejeX, 0, 0, // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion, posInit
 	colorsArraySun
 );
 
 // Planetas que orbitan
+// Gemelos
 generar_planeta(
-	2, 1000, // radio, masa
+	1.6, 1000, // radio, masa
 	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
-	20.0, 0.02, ejeY, ejeZ, 45, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	60.0, 0.01, ejeY, ejeZ, 0, 45, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	colorsArrayPlanet
+);
+
+// Lumbre
+generar_planeta(
+	2.5, 1000, // radio, masa
+	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
+	90.0, 0.008, ejeY, ejeZ, 0, 90, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	colorsArrayPlanet
+);
+
+// Hondonada
+generar_planeta(
+	3, 1000, // radio, masa
+	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
+	120.0, 0.004, ejeY, ejeZ, 0, 310, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	colorsArrayPlanet
+);
+
+// Abismo
+generar_planeta(
+	10, 1000, // radio, masa
+	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
+	170.0, 0.002, ejeY, ejeZ, 0, 160, //normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
+	colorsArrayPlanet
+);
+
+// Espinoscuro
+generar_planeta(
+	8.5, 1000, // radio, masa
+	-0.01, ejeY, // Rotación sobre si mismo: vel, eje
+	200.0, 0.0002, ejeY, ejeZ, 0, 250,//normalize(vec3(1,2,0)), // Rotación sobre orbita: radio, vel, eje, eje inclinacion, inclinacion
 	colorsArrayPlanet
 );

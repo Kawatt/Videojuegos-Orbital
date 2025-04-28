@@ -45,11 +45,11 @@ function remove_model_and_object(models, objects, i) {
  */
 function update_hud() {
 	// Distancia al astro elegido
-	hud_distance_center.textContent = length(subtract(jugador.position, selected_planet.position)).toFixed(2) + " m"
+	hud_distance_center.textContent = (100*length(subtract(jugador.position, selected_planet.position))).toFixed(0) + " m"
 	// Velocidad a la que se está acercando al astro elegido
 	let vel_rel = subtract(jugador.velocity, selected_planet.velocity)
 	let pos_rel = subtract(jugador.position, selected_planet.position)
-	hud_velocity_target.textContent = (1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(2) + " m/s"
+	hud_velocity_target.textContent = (100*1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(0) + " m/s"
 
 	if (hide_signal_obtenida > 0) {
 		hud_signal_obtenida.style.opacity = 1-(1-hide_signal_obtenida/SIGNAL_OBTENIDA_MSG_TIME);
@@ -106,9 +106,9 @@ function render_planet_selector() {
 	let projectedPosition = projectToScreen(selected_planet.position);
 
 	if (projectedPosition.behind) {
-		hud_orient.style.opacity = 0.5;
+		hud_orient.style.opacity = 0.4;
 	} else {
-		hud_orient.style.opacity = 1;
+		hud_orient.style.opacity = 0.9;
 	}
 
 	hud_orient.style.top = Math.max(20, Math.min(canvas.height-(hud_orient.height/2), projectedPosition.y)) + "px";
@@ -235,7 +235,7 @@ window.onload = function init() {
 	view = lookAt(eye,target,up);
 
 	// Establecer la proyeccion perspectiva por defecto
-	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 1000.0 );
+	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 800.0 );
 
 	gl.uniformMatrix4fv(programInfo.uniformLocations.projection, gl.FALSE, projection);
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);

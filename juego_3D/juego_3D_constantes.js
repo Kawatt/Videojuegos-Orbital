@@ -7,16 +7,16 @@
 
 const JUGADOR_RADIO = 1.5;
 const JUGADOR_MASA = 10;
-const ESCALA = 0.00001;
+const ESCALA = 0.000001;
 const VEL_MOVIMIENTO = 0.5 * ESCALA;
-const VEL_GIRAR = 8 * ESCALA;
+const VEL_GIRAR = 80 * ESCALA;
 const MAX_VEL_GIRAR = 16000 * ESCALA;
 const SENSITIVITY = 0.08;  // Sensibilidad del raton (mayor sensibilidad = mayor velocidad)
 const BALL_LIFETIME = 200; // Cantidad de frames que sobrevive el disparo
 const SHOOTING_FORCE = 0.02;
-const INITIAL_POSITION = vec3(0.0, 0.0, -60.0); //Posicion inicial de la nave
+const INITIAL_POSITION = vec3(0.0, 0.0, -230.0); //Posicion inicial de la nave
 const MAX_DISP_COOLDOWN = 10; // Frames entre disparos
-const SIGNAL_OBTENIDA_MSG_TIME = 160; // Frames que se muestra el mensage de 'Señal obtenida'
+const SIGNAL_OBTENIDA_MSG_TIME = 200; // Frames que se muestra el mensage de 'Señal obtenida'
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);
@@ -36,7 +36,7 @@ var uLocations = {};
 var aLocations = {};
 
 var programInfo = {
-			program,
-			uniformLocations: {},
-			attribLocations: {},
+	program,
+	uniformLocations: {},
+	attribLocations: {},
 };
