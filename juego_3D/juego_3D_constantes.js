@@ -17,6 +17,8 @@ const SHOOTING_FORCE = 0.02;
 const INITIAL_POSITION = vec3(0.0, 0.0, -230.0); //Posicion inicial de la nave
 const MAX_DISP_COOLDOWN = 10; // Frames entre disparos
 const SIGNAL_OBTENIDA_MSG_TIME = 200; // Frames que se muestra el mensage de 'Señal obtenida'
+
+// Ejes unitarios de referencia
 const ejeX = vec3(1.0, 0.0, 0.0);
 const ejeY = vec3(0.0, 1.0, 0.0);
 const ejeZ = vec3(0.0, 0.0, 1.0);

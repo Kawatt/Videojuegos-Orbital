@@ -14,6 +14,7 @@ var jugador = {
 	velocity: vec3(0.0, 0.0, 0.0),
 	acceleration: vec3(0.0, 0.0, 0.0),
 
+	// Propiedades de rotacion
 	yaw: 0.0,
 	pitch: 0.0,
 	roll: 0.0,
@@ -54,6 +55,7 @@ function reset_jugador() {
 
 }
 
+// Selecciona el planeta que este mas cerca del jugador
 function seleccionar_planeta() {
 	var ant = Infinity;
 	for (let planeta of planetas) {

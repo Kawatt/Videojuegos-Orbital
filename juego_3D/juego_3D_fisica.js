@@ -21,6 +21,7 @@ function calcular_gravedad(planets, object) {
     const G = 6.67430e-11; // Constante gravitacional
 
     for (let planet of planets) {
+        // distancia desde el objeto al planeta
         let d = subtract(planet.position, object.position);
         let distance = length(d);
 
@@ -28,15 +29,18 @@ function calcular_gravedad(planets, object) {
 
         let forceMagnitude = G * planet.mass * object.mass / dot(d, d);
 
+        // Normaliza d para convertirlo en una direccion
         let u = normalize(d);
 
-        // Fuerza individual
+        // Fuerza individual (mult(forceMagnitude, u) -> obtener vector fuerza)
         gravedad = add(gravedad, mult(forceMagnitude, u))
     }
     
     return gravedad;
 }
 
+// Si la distancia entre los centros de los objetos es menor o igual a la suma 
+// de sus radios es qeu han colisionado
 function colision_esferas(centro1, radio1, centro2, radio2){
 	let radiot = radio1 + radio2;
 	let distancia = length(subtract(centro1, centro2));
@@ -44,14 +48,18 @@ function colision_esferas(centro1, radio1, centro2, radio2){
 }
 
 function detectar_colisiones() {
+    // Comprobar colision jugador-planeta
     planetas.forEach(function(planeta) {
 		if (colision_esferas(jugador.position, jugador.radius, planeta.position, planeta.radius)) {
 			reset_jugador();
 		}
     });
+    // Comporbar colision jugador-señal
     signals.forEach(function(signal, i) {
 		if (colision_esferas(jugador.position, jugador.radius, signal.position, 4)) {
+            // Borra la señal
             remove_model_and_object(objectsToDraw, signals, i);
+            // Genera una señal aleatoria
             generar_signal_aleatoria();
             hud_signal_obtenida.style.display = 'inline';
             hide_signal_obtenida = SIGNAL_OBTENIDA_MSG_TIME;
@@ -59,17 +67,23 @@ function detectar_colisiones() {
             console.log("Señal obtenida");
 		}
     });
-	/*naves.forEach(function(nave) {
+
+	/*
+    // Comprobar colision jugador-nave
+    naves.forEach(function(nave) {
 		if (colision_esferas(jugador.position, 1, nave.position, 1)) {
 			reset_jugador();
 		}
     });
+
+    // Comprobar colision jugador-disparo
 	balls.forEach(function(ball, i) {
 		if(naves.length > 0){if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
 			remove_model_and_object(objectsToDraw, naves, 0)
 			remove_model_and_object(objectsToDraw, balls, i)
 		}}
-    });*/
+    });
+    */
 }
 
 /**

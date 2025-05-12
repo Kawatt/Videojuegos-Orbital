@@ -103,10 +103,11 @@ const colorsDisp = [
 
 
 // PLANETAS
+// Genera una esfera 3D suave a partir de un icosaedro (figura de 20 caras triangulares).
 function generateIcosahedronSphere(subdivisions) {
-    const t = (1.0 + Math.sqrt(5.0)) / 2.0;
-
-    // Vértices iniciales del icosaedro
+	
+	// Vértices iniciales del icosaedro
+    const t = (1.0 + Math.sqrt(5.0)) / 2.0; // Para que esten distribuidos de manera equilibrada
     let vertices = [
         [-1, t, 0, 1.0], [1, t, 0, 1.0], [-1, -t, 0, 1.0], [1, -t, 0, 1.0],
         [0, -1, t, 1.0], [0, 1, t, 1.0], [0, -1, -t, 1.0], [0, 1, -t, 1.0],
@@ -114,6 +115,8 @@ function generateIcosahedronSphere(subdivisions) {
     ];
 
     // Normalizar los vértices
+	// Cada vertice se "empuja" hacia la superficie de una esfera haciendo que
+	// todos queden a la misma distancia del centro -> forma REDONDA
     vertices = vertices.map(v => normalize_new(v));
 
     // Triángulos del icosaedro
@@ -125,16 +128,22 @@ function generateIcosahedronSphere(subdivisions) {
     ];
 
     // Subdivisión de triángulos
+	// Cada triangulo se subdivide en cuatro mas pequeños para suavizar la esfera 
+	// Para cada triangulo se calcula el punto medio de cada lado (AB, BC y CA)
+	// Crea 4 triangulos usando los puntos calculados y el centro del triangulo
     for (let i = 0; i < subdivisions; i++) {
-        let newIndices = [];
-        let midPointCache = {};
+        let newIndices = []; // Triangulos resultantes de la subdivision
+        let midPointCache = {}; // Puntos medios calculados
 
+		// DEFINICION DE LA FUNCION: Obtiene el punto medio entre los vertices a y b
         function getMidPoint(a, b) {
             let key = a < b ? `${a}-${b}` : `${b}-${a}`;
+			// Comprueba que este punto no se haya calculado ya
             if (midPointCache[key] !== undefined) {
                 return midPointCache[key];
             }
 
+			// Normaliza los nuevos vertices para que esten sobre la esfera
             let mid = normalize_new([
                 (vertices[a][0] + vertices[b][0]) / 2,
                 (vertices[a][1] + vertices[b][1]) / 2,
@@ -142,27 +151,30 @@ function generateIcosahedronSphere(subdivisions) {
                 1.0
             ]);
 
+			// Guarda el vertice en el array de vertices
             let index = vertices.length;
             vertices.push(mid);
             midPointCache[key] = index;
             return index;
         }
 
+		// Para cada triangulo, realiza la subdivision en 4
         for (let tri of indices) {
             let a = tri[0], b = tri[1], c = tri[2];
             let ab = getMidPoint(a, b);
             let bc = getMidPoint(b, c);
             let ca = getMidPoint(c, a);
 
+			// Guarda los nuevos triangulos en el array 
             newIndices.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]);
         }
 
+		// Establece el array de vertices al nuevo
         indices = newIndices;
     }
 
-    // Convertir los datos a buffers planos
+    // Convertir los datos a buffers planos para pasarlo a WebGL
     let pointsArray = [];
-
     for (let tri of indices) {
         for (let idx of tri) {
             let v = vertices[idx];
@@ -175,6 +187,8 @@ function generateIcosahedronSphere(subdivisions) {
 }
 
 // Normalización de vectores
+// Normaliza un vector 3D para que tenga longitud 1, es decir, lo proyecta
+// sobre una esfera de radio 1.
 function normalize_new(v) {
     let len = Math.sqrt(v[0] ** 2 + v[1] ** 2 + v[2] ** 2);
     return [v[0] / len, v[1] / len, v[2] / len, 1.0];
@@ -183,6 +197,7 @@ function normalize_new(v) {
 // Generar esfera con 3 subdivisiones (más alto -> más detallado)
 const { pointsArray } = generateIcosahedronSphere(3);
 
+// Crea un array para dar colo ar sol (R=1, G=0.3, B=0, Opacidad = 1) 
 function arrayColorSun() {
 	let ret = [];
 	for (let i=0; i < pointsArray.length; i++) {
@@ -195,6 +210,7 @@ function arrayColorSun() {
 }
 var colorsArraySun = arrayColorSun()
 
+// Crea un array para dar colo ar sol (R=0, G=aleatorio, B=1, Opacidad = 1) 
 function arrayColorPlanet() {
 	let ret = [];
 	for (let i=0; i < pointsArray.length; i++) {
