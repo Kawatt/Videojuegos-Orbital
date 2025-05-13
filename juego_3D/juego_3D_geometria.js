@@ -18,10 +18,12 @@ const default_color =	[0.5, 0.5, 0.5, 1.0];
 const red =			[1.0, 0.0, 0.0, 1.0];
 const green =		[0.0, 1.0, 0.0, 1.0];
 const blue =		[0.0, 0.0, 1.0, 1.0];
+const cyan = 		[0.0, 1.0, 1.0, 1.0];
 const lightred =	[1.0, 0.5, 0.5, 1.0];
 const lightgreen =	[0.5, 1.0, 0.5, 1.0];
 const lightblue = 	[0.5, 0.5, 1.0, 1.0];
 const white =		[1.0, 1.0, 1.0, 1.0];
+const dirtyWhite =	[0.3, 0.3, 0.3, 1.0];
 
 const colorsAxes = [
 	green, green, //x
@@ -199,35 +201,87 @@ function normalize_new(v) {
 // Generar esfera con 3 subdivisiones (más alto -> más detallado)
 const { pointsArray } = generateIcosahedronSphere(3);
 
-// Crea un array para dar colo ar sol (R=1, G=0.3, B=0, Opacidad = 1) 
+// Crea un array para dar color al sol (R=1, G=0.3, B=0, Opacidad = 1) 
 function arrayColorSun() {
 	let ret = [];
 	for (let i=0; i < pointsArray.length; i++) {
-		let greenValue = Math.random()*0.4+0.2;//Math.random()*0.6+0.2;
+		let greenValue = Math.random()*0.4+0.3; //Math.random()*0.4+0.2;
 		let redValue = 1.0;
 		let blueValue = 0.0;
-		ret.push([redValue, 0.3, 0.0, 1.0]);
+		ret.push([redValue, greenValue, 0.0, 1.0]);
 	}
 	return ret;
 }
 var colorsArraySun = arrayColorSun()
 
-// Crea un array para dar colo ar sol (R=0, G=aleatorio, B=1, Opacidad = 1) 
-function arrayColorPlanet() {
+//Mercurio 0.8, 0.8, 0.8
+function arrayColorPlanet_1() {
 	let ret = [];
 	for (let i=0; i < pointsArray.length; i++) {
-		let greenValue = Math.random()*0.6+0.2;
-		let blueValue = 1.0;
-		let redValue = 0.0;
+		let redValue = Math.random()*0.4+0.4;
+		let greenValue =  Math.random()*0.4+0.4;
+		let blueValue = Math.random()*0.4+0.4;
 		ret.push([redValue, greenValue, blueValue, 1.0]);
 	}
 	return ret;
 }
-var colorsArrayPlanet = arrayColorPlanet()
 
+// Venus 0.9, 0.6, 0.2
+function arrayColorPlanet_2() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let redValue = Math.random()*0.3+0.7;
+		let greenValue =  Math.random()*0.2+0.4;
+		let blueValue = Math.random()*0.2+0.2;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+
+// Tierra
+function arrayColorPlanet_3() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let redValue = Math.random()*0.1;
+		let greenValue = Math.random()*0.2+0.3;
+		let blueValue = Math.random()*0.1+0.2;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+
+// Jupiter - 1.0, 0.9, 0.5
+function arrayColorPlanet_4() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let redValue = Math.random()*0.1+0.9;
+		let greenValue =  Math.random()*0.2+0.7;
+		let blueValue = Math.random()*0.2+0.3;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+
+// Saturno - 0.9, 0.9, 0.6
+function arrayColorPlanet_5() {
+	let ret = [];
+	for (let i=0; i < pointsArray.length; i++) {
+		let greenValue = Math.random()*0.2+0.7;
+		let blueValue =  Math.random()*0.2+0.7;
+		let redValue = 0.6;
+		ret.push([redValue, greenValue, blueValue, 1.0]);
+	}
+	return ret;
+}
+
+var colorsArrayPlanet_1 = arrayColorPlanet_1()
+var colorsArrayPlanet_2 = arrayColorPlanet_2()
+var colorsArrayPlanet_3 = arrayColorPlanet_3()
+var colorsArrayPlanet_4 = arrayColorPlanet_4()
+var colorsArrayPlanet_5 = arrayColorPlanet_5()
 
 // Señales ---------------------------------------------------------------------
-const signal_scale = 3 // Permite escalar las señales facilmente
+const signal_scale = 4 // Permite escalar las señales facilmente
 const signalVerts = [
 	[ 0.2, 0.2, 0.2, 1], //0
 	[ 0.2, 0.2,-0.2, 1], //1
@@ -262,10 +316,56 @@ for (let i=0; i < signalIndices.length; i++)
 }
 
 const colorsSignal = [	
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
-	white, white, white, white, white, white,
+	cyan, cyan, cyan, cyan, cyan, cyan,
+	cyan, cyan, cyan, cyan, cyan, cyan,
+	cyan, cyan, cyan, cyan, cyan, cyan,
+	cyan, cyan, cyan, cyan, cyan, cyan,
+	cyan, cyan, cyan, cyan, cyan, cyan,
+	cyan, cyan, cyan, cyan, cyan, cyan,
 ];	
+
+
+// OTROS -----------------------------------------------------------------------
+
+const estrella_scale = 3 // Permite escalar las señales facilmente
+const estrellasVertices = [
+	[ 0.2, 0.2, 0.2, 1], //0
+	[ 0.2, 0.2,-0.2, 1], //1
+	[ 0.2,-0.2, 0.2, 1], //2
+	[ 0.2,-0.2,-0.2, 1], //3
+	[-0.2, 0.2, 0.2, 1], //4
+	[-0.2, 0.2,-0.2, 1], //5
+	[-0.2,-0.2, 0.2, 1], //6
+	[-0.2,-0.2,-0.2, 1], //7
+].map(v => [v[0]*estrella_scale, v[1]*estrella_scale, v[2]*estrella_scale, v[3]]);
+
+const estrellasIndices = [	
+//Solid Cube - use TRIANGLES, starts at 0, 36 vertices
+	0,4,6, //front
+	0,6,2,
+	1,0,2, //right
+	1,2,3, 
+	5,1,3, //back
+	5,3,7,
+	4,5,7, //left
+	4,7,6,
+	4,0,1, //top
+	4,1,5,
+	6,7,3, //bottom
+	6,3,2,
+];
+
+const color_estrellas = [	
+	dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite,
+	dirtyWhite, dirtyWhite, white, dirtyWhite, white, dirtyWhite,
+	white, dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite,
+	dirtyWhite, dirtyWhite, dirtyWhite, white, dirtyWhite, white,
+	dirtyWhite, white, dirtyWhite, dirtyWhite, dirtyWhite, dirtyWhite,
+	dirtyWhite, dirtyWhite, white, dirtyWhite, dirtyWhite, dirtyWhite,
+];	
+
+const puntosEstrellas = [];
+for (let i=0; i < estrellasIndices.length; i++)
+{
+	puntosEstrellas.push(estrellasVertices[estrellasIndices[i]]);
+}

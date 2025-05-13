@@ -51,12 +51,15 @@ function detectar_colisiones() {
     // Comprobar colision jugador-planeta
     planetas.forEach(function(planeta) {
 		if (colision_esferas(jugador.position, jugador.radius, planeta.position, planeta.radius)) {
+            hud_ha_colisionado.style.display = 'inline';
+            hide_ha_colisionado = HA_COLISIONADO_MSG_TIME;
+            signals_obtenidas = 0;
 			reset_jugador();
 		}
     });
     // Comporbar colision jugador-señal
     signals.forEach(function(signal, i) {
-		if (colision_esferas(jugador.position, jugador.radius, signal.position, 4)) {
+		if (colision_esferas(jugador.position, jugador.radius, signal.position, 30)) {
             // Borra la señal
             remove_model_and_object(objectsToDraw, signals, i);
             // Genera una señal aleatoria

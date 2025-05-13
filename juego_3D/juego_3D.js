@@ -23,6 +23,14 @@ function crear_objeto_y_modelo(object, model, vector) {
 	vector.push(object);
 }
 
+function crear_estrella(object, model, vector) {
+	setOnePrimitive(model);
+	objectsToDraw.push(model);
+	object.model = model;
+	vector.push(object);
+	console.log("estrella creada");
+}
+
 /**
  * Elimina un objeto y su modelo asociado
  * 
@@ -45,19 +53,26 @@ function remove_model_and_object(models, objects, i) {
  */
 function update_hud() {
 	// Distancia al astro elegido
-	hud_distance_center.textContent = (100*length(subtract(jugador.position, selected_planet.position))).toFixed(0) + " m"
+	hud_distance_center.textContent = "Distancia al astro: "+(100*length(subtract(jugador.position, selected_planet.position))).toFixed(0) + " m"
 	// Velocidad a la que se está acercando al astro elegido
 	let vel_rel = subtract(jugador.velocity, selected_planet.velocity)
 	let pos_rel = subtract(jugador.position, selected_planet.position)
-	hud_velocity_target.textContent = (100*1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(0) + " m/s"
+	hud_velocity_target.textContent = "Velocidad de aproximacion: " + (100*1000*(-dot(pos_rel, vel_rel)/ length(pos_rel))).toFixed(0) + " m/s"
 	// Puntuación
-	hud_points.textContent = "Señales obtenidas: " + signals_obtenidas;
+	hud_points.textContent = "Balizas obtenidas: " + signals_obtenidas;
 
 	if (hide_signal_obtenida > 0) {
 		hud_signal_obtenida.style.opacity = 1-(1-hide_signal_obtenida/SIGNAL_OBTENIDA_MSG_TIME);
 		hide_signal_obtenida--;
 	} else {
 		hud_signal_obtenida.style.display = 'none';
+	}
+
+	if (hide_ha_colisionado > 0) {
+		hud_ha_colisionado.style.opacity = 1-(1-hide_ha_colisionado/HA_COLISIONADO_MSG_TIME);
+		hide_ha_colisionado--;
+	} else {
+		hud_ha_colisionado.style.display = 'none';
 	}
 }
 
@@ -71,8 +86,11 @@ function start_hud() {
 	hud_ajustar_vel.textContent = "Velocidad Ajustada";
 	hud_ajustar_vel.style.display = 'none';
 	hud_signal_obtenida = document.getElementById("hud_signal_obtenida");
-	hud_signal_obtenida.textContent = "Señal Obtenida";
+	hud_signal_obtenida.textContent = "Baliza obtenida";
 	hud_signal_obtenida.style.display = 'none';
+	hud_ha_colisionado = document.getElementById("hud_ha_colisionado");
+	hud_ha_colisionado.textContent = "Ha colisionado con un astro y ha perdido sus balizas";
+	hud_ha_colisionado.style.display = 'none';
 	hud_points = document.getElementById("hud_points");
 
 	hud_mira = document.getElementById("mira");
@@ -181,15 +199,17 @@ var hud_velocity_target;
 var hud_points;
 var hud_ajustar_vel;
 var hud_signal_obtenida;
+var hud_ha_colisionado;
 var hud_mira;
 var hud_orient;
 
 
 var hide_signal_obtenida = 0;
+var hide_ha_colisionado = 0;
+
 var signals_obtenidas = 0;
 
 window.initGame = function() {
-	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
 	canvas.width = window.innerWidth;
@@ -206,6 +226,7 @@ window.initGame = function() {
 
 	setPrimitive(objectsToDraw);
 	setPrimitive(spheresToDraw);
+	//setPrimitive(starsToDraw);
 
 	// Set up a WebGL program
 	// Load shaders and initialize attribute buffers
@@ -246,8 +267,9 @@ window.initGame = function() {
 	
 	start_hud();
 	//createNaveEnemiga();
-	//generar_signal(30.0, 0.02, ejeY, ejeZ, 45);
-	generar_signal_aleatoria();
+	generar_señales(7);
+	generar_fondo_estrellas();
+
 	
 	lastTick = Date.now();
 	requestAnimFrame(tick);
@@ -410,6 +432,15 @@ function render(dt) {
 		// Colocar en posición
 		uniforms.u_model = translate(signal.position[0], signal.position[1], signal.position[2]);
 	}
+
+	for(let i=0; i < estrellas.length; i++){
+		let estrella = estrellas[i];
+		let uniforms = estrella.model.uniforms;
+
+		// Colocar en posición
+		uniforms.u_model = translate(estrella.position[0], estrella.position[1], estrella.position[2]);
+	}
+
 
 	// Renderizado de naves
 	for(let i=0; i < naves.length; i++){

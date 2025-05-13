@@ -102,8 +102,14 @@ function generar_signal_aleatoria() {
 		}
 	}
 	let radio = (Math.random()*120)+planetas[0].radius;
-	let vel_orb = Math.random()*0.07+0.01;
+	let vel_orb = Math.random()*0.03+0.01;
 	let incl = Math.random()*360;
 	generar_signal(radio, vel_orb, ejOrb, ejInc, incl);
 	console.log("Generada señal con orbita de radio " + radio + " y velocidad orbital " + vel_orb + ".\n Orbitando sobre el eje " + ejOrb + " con inclinacion " + incl + " sobre el eje " + ejInc)
+}
+
+function generar_señales(numero){
+	for(let i = 0; i < numero; i++) {
+		generar_signal_aleatoria();
+	}
 }

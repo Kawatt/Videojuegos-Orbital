@@ -5,19 +5,23 @@
             z-index: 1;
             top: 0;
             left: 0;
-            color: aqua;
-            font-size: x-large;
+            color: rgb(255, 255, 255);
+            font-size: large;
             font-family: 'Courier New', Courier, monospace;
             font-weight:500;
+            margin-top: 20px;
+            margin-left: 20px;
         }
         #hud_velocity_target {
             z-index: 1;
             top: 0;
             left: 0;
-            color: aqua;
-            font-size: x-large;
+            color: rgb(255, 255, 255);
+            font-size: large;
             font-family: 'Courier New', Courier, monospace;
             font-weight:500;
+            margin-left: 20px;
+
         }
         #hud_points {
             z-index: 3;
@@ -28,6 +32,8 @@
             font-family: 'Courier New', Courier, monospace;
             font-weight: 500;
             float: right;
+            margin-top: 20px;
+            margin-right: 20px;
         }
         #hud_ajustar_vel {
             position: absolute;
@@ -45,6 +51,19 @@
             position: absolute;
             z-index: 1;
             top: 60%;
+            left: 50%;
+            transform: translate(-50%, -60%);
+            color: aqua;
+            font-size: x-large;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        #hud_ha_colisionado {
+            position: absolute;
+            z-index: 1;
+            top: 70%;
             left: 50%;
             transform: translate(-50%, -60%);
             color: aqua;
@@ -133,12 +152,13 @@
     <script type="text/javascript" src="juego_3D_signals.js"></script>
     <script type="text/javascript" src="juego_3D_jugador.js"></script>
     <script type="text/javascript" src="juego_3D_fisica.js"></script>
+    <script type="text/javascript" src="juego_3D_estrellas.js"></script>
     
     <script>
     
     // Oculta los elementos del juego al principio
     document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #gl-canvas")
+        document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #hud_ha_colisionado, #gl-canvas")
             .forEach(el => el.style.display = "none");
     });
     </script>
@@ -237,6 +257,7 @@
     <div id="hud_velocity_target" width="1024" height="512"> </div>
     <div id="hud_ajustar_vel" width="1024" height="512"> </div>
     <div id="hud_signal_obtenida" width="1024" height="512"> </div>
+    <div id="hud_ha_colisionado" width="1024" height="512"> </div>
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
@@ -261,7 +282,7 @@
             document.getElementById("clouds").style.display = "none";
 
             // Muestra los elementos del juego
-            document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #gl-canvas")
+            document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #hud_ha_colisionado, #gl-canvas")
                 .forEach(el => el.style.display = "block");
 
             // Carga el script principal del juego dinámicamente
