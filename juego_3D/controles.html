@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+    <title>Controles de Orbital</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: black;
+            color: aqua;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            background: radial-gradient(circle at center, #000000 0%, #0a0a0a 100%);
+        }
+
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            color: #ffffff;
+            font-family: 'Courier Prime', 'Courier New', Courier, monospace;
+        }
+
+
+
+        ul {
+            list-style: none;
+            padding: 0;
+            font-size: 1.2em;
+        }
+        li {
+            margin: 10px 0;
+        }
+        a {
+            margin-top: 2em;
+            color: aqua;
+            text-decoration: underline;
+            font-size: 1em;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #66ffff;
+        }
+
+        /* Botón estilo */
+        .btn-back {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: rgba(0, 255, 255, 0.2);
+            color: #00ffff;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s ease-in-out;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);         
+            text-decoration: none; /* Quitar subrayado */
+            display: inline-block; /* Hace que se vea como un botón */
+        }
+        .btn-back:hover {
+            background-color: #00ffff;
+            color: black;
+            transform: scale(1.1);
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Controles</h1>
+    <ul>
+        <li>🡄 / 🡆 / 🡅 / 🡇 - Girar camara de la nave</li>
+        <li>A / W / S / D - Desplazar la nave</li>
+        <li>Q / E - Rotar la nave</li>
+        <li>F - Seleccionar planeta apuntado</li>
+        <li>Z - Ajustar velocidad al planeta apuntado</li>
+    </ul>
+    <a href="juego_3D.html" class="btn-back">← Volver al menú</a>
+</body>
+</html>

@@ -188,14 +188,14 @@ var hud_orient;
 var hide_signal_obtenida = 0;
 var signals_obtenidas = 0;
 
-window.onload = function init() {
+window.initGame = function() {
 	
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
 	canvas = document.getElementById("gl-canvas");
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
-	start_hud();
-	gl = WebGLUtils.setupWebGL(canvas);
+
+	gl = WebGLUtils.setupWebGL(canvas); // inicializar contexto webgl
 	if (!gl) {
 		alert("WebGL isn't available");
 	}
@@ -244,6 +244,7 @@ window.onload = function init() {
 	window.addEventListener("keydown", keyDownHandler);
 	window.addEventListener("keyup", keyReleasedHandler);
 	
+	start_hud();
 	//createNaveEnemiga();
 	//generar_signal(30.0, 0.02, ejeY, ejeZ, 45);
 	generar_signal_aleatoria();

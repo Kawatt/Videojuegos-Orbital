@@ -29,7 +29,7 @@ const colorsAxes = [
 	blue, blue,   //z
 ];		
 
-// NAVES ENEMIGAS
+// NAVES ENEMIGAS --------------------------------------------------------------
 const naveVerts = [
 	[ 0.0, 0.0, 0.5, 1], //0 punta delantera
 	[ 0.5, 0.0,-0.5, 1], //1
@@ -58,7 +58,7 @@ let colorsNave = [
 	white, white, white,
 ]
 
-// Disparos
+// Disparos --------------------------------------------------------------------
 const dispVerts = [
 	[ 0.005, 0.005, 0.005, 1], //0
 	[ 0.005, 0.005,-0.005, 1], //1
@@ -102,7 +102,9 @@ const colorsDisp = [
 ];	
 
 
-// PLANETAS
+
+// PLANETAS --------------------------------------------------------------------
+
 // Genera una esfera 3D suave a partir de un icosaedro (figura de 20 caras triangulares).
 function generateIcosahedronSphere(subdivisions) {
 	
@@ -224,7 +226,8 @@ function arrayColorPlanet() {
 var colorsArrayPlanet = arrayColorPlanet()
 
 
-// Disparos
+// Señales ---------------------------------------------------------------------
+const signal_scale = 3 // Permite escalar las señales facilmente
 const signalVerts = [
 	[ 0.2, 0.2, 0.2, 1], //0
 	[ 0.2, 0.2,-0.2, 1], //1
@@ -234,7 +237,7 @@ const signalVerts = [
 	[-0.2, 0.2,-0.2, 1], //5
 	[-0.2,-0.2, 0.2, 1], //6
 	[-0.2,-0.2,-0.2, 1], //7
-];
+].map(v => [v[0]*signal_scale, v[1]*signal_scale, v[2]*signal_scale, v[3]]);
 
 const signalIndices = [	
 //Solid Cube - use TRIANGLES, starts at 0, 36 vertices

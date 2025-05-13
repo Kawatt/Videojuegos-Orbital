@@ -78,6 +78,16 @@
         }
       </style>
 <head>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* evita scroll innecesario */
+        }
+    </style>
+
     <title>Orbital</title>
 
     <!-- Vertex shader -->
@@ -118,10 +128,89 @@
     <script type="text/javascript" src="juego_3D_signals.js"></script>
     <script type="text/javascript" src="juego_3D_jugador.js"></script>
     <script type="text/javascript" src="juego_3D_fisica.js"></script>
-    <script type="text/javascript" src="juego_3D.js"></script>
+    
+    <script>
+    
+    // Oculta los elementos del juego al principio
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #gl-canvas")
+            .forEach(el => el.style.display = "none");
+    });
+    //<script type="text/javascript" src="juego_3D.js"></script>
+    </script>
+
 </head>
 
 <body>
+
+    <div id="menu" style="
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #000000 0%, #0a0a0a 100%);
+        color: aqua;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        font-family: 'Courier New', Courier, monospace;
+        text-align: center;
+        padding: 20px;
+    ">
+        <h1 style="
+            font-size: 3em;
+            margin-bottom: 0.5em;
+            text-shadow: 0 0 10px aqua;
+        ">
+            🚀 Bienvenido a <span style="color: white;">Orbital</span>
+        </h1>
+        <p style="
+            font-size: 1.2em;
+            max-width: 600px;
+            margin-bottom: 2em;
+            color: #ccc;
+        ">
+            Explora el espacio, recoge señales misteriosas y domina la física orbital. ¿Estás listo?
+        </p>
+        <button onclick="iniciarJuego()" style="
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: aqua;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 0 10px aqua;
+            margin-bottom: 15px;
+            "
+            onmouseover="this.style.backgroundColor='#66ffff'; this.style.transform='scale(1.05)'"
+            onmouseout="this.style.backgroundColor='aqua'; this.style.transform='scale(1)'"
+            >
+            Iniciar Juego
+        </button>
+
+
+        <button onclick="location.href='controles.html'" style="
+            padding: 10px 25px;
+            font-size: 1.2em;
+            background-color: transparent;
+            color: aqua;
+            border: 2px solid aqua;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            "
+            onmouseover="this.style.backgroundColor='aqua'; this.style.color='black'"
+            onmouseout="this.style.backgroundColor='transparent'; this.style.color='aqua'"
+            >
+            Ver Controles
+        </button>
+        
+    </div>
+
+
     <!-- El canvas, que permite renderizar con WebGL -->
     <img id="orientador" src="../sources/target.png" width="64" height="64" />
     <img id="mira" src="../sources/mira.png" width="64" height="64" />
@@ -133,6 +222,37 @@
     <canvas id="gl-canvas" width="1024" height="512">
         Oops ... your browser doesn't support the HTML5 canvas element
     </canvas>
+
+
+
+    <!-- Inicializar el juego cuando se pulse el boton -->
+    <script>
+    window.iniciarJuego = function () {
+        console.log("Iniciando juego...");
+
+        // Oculta el menú
+        document.getElementById("menu").style.display = "none";
+
+        // Muestra los elementos del juego
+        document.querySelectorAll("#orientador, #mira, #hud_points, #hud_distance, #hud_velocity_target, #hud_ajustar_vel, #hud_signal_obtenida, #gl-canvas")
+            .forEach(el => el.style.display = "block");
+
+        // Carga el script principal del juego dinámicamente
+        const script = document.createElement('script');
+        script.src = "juego_3D.js";
+        script.onerror = () => console.error("Error cargando juego_3D.js");
+        script.onload = () => {
+            console.log("juego_3D.js cargado correctamente.");
+            if (typeof window.initGame === "function") {
+                window.initGame();
+            } else {
+                console.error("La función initGame() no está definida.");
+            }
+        };
+        document.body.appendChild(script);
+    };
+    </script>
+
 
 </body>
 </html>
