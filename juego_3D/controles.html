@@ -3,8 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="starfield.css">
     <title>Controles de Orbital</title>
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -68,9 +77,18 @@
             transform: scale(1.1);
         }
 
+        .menu-content {
+            position: relative;
+            z-index: 10; /* Coloca el menú por encima de las estrellas */
+        }
+
+
+
     </style>
 </head>
 <body>
+
+    <div class="menu-content">
     <h1>Controles</h1>
     <ul>
         <li>🡄 / 🡆 / 🡅 / 🡇 - Girar camara de la nave</li>
@@ -80,5 +98,10 @@
         <li>Z - Ajustar velocidad al planeta apuntado</li>
     </ul>
     <a href="juego_3D.html" class="btn-back">← Volver al menú</a>
+    </div>
+
+    <div class='stars'></div>
+    <div class='twinkling'></div>
+    <div class='clouds'></div>
 </body>
 </html>
