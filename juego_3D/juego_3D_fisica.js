@@ -20,6 +20,8 @@ function calcular_gravedad(planets, object) {
 	let gravedad = vec3(0.0,0.0,0.0);
     const G = 6.67430e-11; // Constante gravitacional
 
+    // Para cada planeta calcula la distancia entre el planeta y el objeto, 
+    // se aplica la fuerza de gravedad entre dos cuerpos
     for (let planet of planets) {
         // distancia desde el objeto al planeta
         let d = subtract(planet.position, object.position);
@@ -27,6 +29,7 @@ function calcular_gravedad(planets, object) {
 
         if (distance === 0) continue; // Evitar división por cero
 
+        // Fuerza de gravedad G*m1*m2 / d^2
         let forceMagnitude = G * planet.mass * object.mass / dot(d, d);
 
         // Normaliza d para convertirlo en una direccion
@@ -70,23 +73,6 @@ function detectar_colisiones() {
             console.log("Señal obtenida");
 		}
     });
-
-	/*
-    // Comprobar colision jugador-nave
-    naves.forEach(function(nave) {
-		if (colision_esferas(jugador.position, 1, nave.position, 1)) {
-			reset_jugador();
-		}
-    });
-
-    // Comprobar colision jugador-disparo
-	balls.forEach(function(ball, i) {
-		if(naves.length > 0){if (colision_esferas(ball.position, 0.1, naves[0].position, 1)) {
-			remove_model_and_object(objectsToDraw, naves, 0)
-			remove_model_and_object(objectsToDraw, balls, i)
-		}}
-    });
-    */
 }
 
 /**
@@ -99,17 +85,23 @@ function detectar_colisiones() {
  * @returns Un diccionario donde intersecta es un booleano indicando si ha intersectado y dist es la distancia al punto de intersección
  */
 function intersecta(origen, direccion, centro, radio) {
+    // Vector origen jugador - centro esfera
     let OC = subtract(origen, centro)
+
+    // Coeficientes de la ecuacion cuadratica para interseccion rayo-esfera
     let a = dot(direccion, direccion)
     let b = 2 * dot(OC, direccion)
     let c = dot(OC, OC) - radio*radio
     
+    // Indica si hay 0, 1 o 2 soluciones reales
     let discriminante = b*b - 4*a*c
     
+    // Si es negativo no hay interseccion
     if (discriminante < 0) {
         return {intersecta:false, dist:0}  // no intersection
     }
     else {
+        // Comprobar que esfera esté por delante del rayo
         let sqrt_disc = Math.sqrt(discriminante)
         let t1 = (-b - sqrt_disc) / (2*a)
         let t2 = (-b + sqrt_disc) / (2*a)

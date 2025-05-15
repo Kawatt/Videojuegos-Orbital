@@ -7,8 +7,7 @@
 
 var spheresToDraw = [];
 
-var planetas = [
-];
+var planetas = [];
 
 /**
  * Crea un planeta.
@@ -32,13 +31,24 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 		throw new Error('⚠️ Los ejes ejeOrbita y ejeInclinacion no pueden ser iguales.');
 	}
 
-	// Inclinacion de la orbita
+	// Inclinacion de la orbita - Eje perpendicular a la inclinacion y a la orbita
+	// Con esto se consigue en que direccion se debe mover el planeta para que
+	// este sobre la orbita pero en el plano inclinado
 	let ejeDesplazamiento = cross(ejeOrbita, ejeInclinacion)
 
+	// Crea una matriz de rotacion con cero grados para construir el vector como
+	// vec4 (homogeneo)
 	let RInc = rotate(0, ejeDesplazamiento);
+
+	// Convierte el eje de inclinacion en un vec4 y lo transforma con la matriz
+	// Con esto podemos rotar objetos en el espacio
 	let ejeInclinacionRotado =
 		mult(RInc, vec4(ejeInclinacion[0], ejeInclinacion[1], ejeInclinacion[2], 0.0));
 
+	// Matriz de rotacion que inclina el plano de la orbita respecto a un eje determinado.
+	// Esto hace que los planetas no orbiten en el mismo plano
+	// En lugar de orbitar en el plano XZ, el planeta orbitara en un plano 
+	// inclinado respecto al eje elegido
 	let M_Rot_Inclinacion = 
 		rotate(
 			inclinacion, // Inclinacion de la orbita
@@ -49,25 +59,32 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 			)
 		);
 
+	// Calcula la posicion del planeta a lo largo de la orbita multiplicaando
+	// el eje perpendicular (eje desplazamiento) por la distancia al sol (radio)
+	// Sirve para poner el planeta en la orbita, sino se quedaria en el origen
 	let M_Tras_R_Orb = translate(
 		ejeDesplazamiento[0] * radioOrbita,
 		ejeDesplazamiento[1] * radioOrbita,
 		ejeDesplazamiento[2] * radioOrbita
 	);
 
-	// Escalado de tamaño
+	// Escalado de tamaño - Multiplica cada componente para que tenga el tamaño 
+	// correcto
 	let M_Escalado = scale(radioPlaneta, radioPlaneta, radioPlaneta);
 
 	planetas.push({
 
+		// Posiciones fisicas
 		position: vec3(0,0,0),
 		oldpos: vec3(0,0,0),
 		velocity: vec3(0,0,0),
 
+		// Rotacion sobre si mismo
 		vel_rot_mismo: velRotMismo,
 		eje_rot_mismo: ejeRotMismo,
 		pos_rot_mismo: 0.0,
 
+		// Parametros orbitales
 		radio_orbita: radioOrbita,
 		vel_orbita: velOrbita,
 		eje_orbita: ejeOrbita,
@@ -83,14 +100,14 @@ function generar_planeta(radioPlaneta, masaPlaneta, velRotMismo, ejeRotMismo, ra
 	});
 
 	spheresToDraw.push({
-		programInfo: programInfo,
-		pointsArray: pointsArray,
-		colorsArray: arrayColor,
+		programInfo: programInfo,	// Info del shader
+		pointsArray: pointsArray,	// Geometria de la esfera (vertices)
+		colorsArray: arrayColor,	// Colores del planeta
 		uniforms: {
-			u_colorMult: [1.0, 1.0, 1.0, 1.0],
-			u_model: new mat4(),
+			u_colorMult: [1.0, 1.0, 1.0, 1.0],	// Modificador del color
+			u_model: new mat4(),	// Matrix del modelo (se rellena despues)
 		},
-		primType: "triangles",
+		primType: "triangles",	// Tipo de primitiva para webgl
 	});
 }
 

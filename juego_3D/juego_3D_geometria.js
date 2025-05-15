@@ -38,7 +38,6 @@ const naveVerts = [
 	[-0.5, 0.0,-0.5, 1], //2
 	[ 0.0, 0.3,-0.3, 1], //3 ala
 ];
-
 const naveIndices = [	
 	//Solid Cube - use TRIANGLES
 	0,1,2,
@@ -46,13 +45,11 @@ const naveIndices = [
 	0,2,3,
 	1,2,3,
 ];
-
 const pointsNave = [];
 for (let i=0; i < naveIndices.length; i++)
 {
 	pointsNave.push(naveVerts[naveIndices[i]]);
 }
-
 let colorsNave = [	
 	red, lightred, lightred, 
 	red, lightred, lightred,
@@ -199,7 +196,7 @@ function normalize_new(v) {
 }
 
 // Generar esfera con 3 subdivisiones (más alto -> más detallado)
-const { pointsArray } = generateIcosahedronSphere(3);
+const { pointsArray } = generateIcosahedronSphere(1);
 
 // Crea un array para dar color al sol (R=1, G=0.3, B=0, Opacidad = 1) 
 function arrayColorSun() {

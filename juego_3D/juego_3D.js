@@ -211,28 +211,32 @@ var signals_obtenidas = 0;
 
 window.initGame = function() {
 	// Set up a WebGL Rendering Context in an HTML5 Canvas
+	// Busqueda del canbas en el HTML y lo ajusta para que ocupe toda la pantalla
 	canvas = document.getElementById("gl-canvas");
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
+	// Inicializar WebGL - Creacion del contexto WebGL
 	gl = WebGLUtils.setupWebGL(canvas); // inicializar contexto webgl
 	if (!gl) {
 		alert("WebGL isn't available");
 	}
 
-	//  Configure WebGL
+	// Configure WebGL para que el fondo sea negro y permite que los objetos
+	// mas cercanos tapen los mas lejanos
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.enable(gl.DEPTH_TEST);
 
+	// Prepara los objetos que se van a dibujar
 	setPrimitive(objectsToDraw);
 	setPrimitive(spheresToDraw);
-	//setPrimitive(starsToDraw);
 
-	// Set up a WebGL program
-	// Load shaders and initialize attribute buffers
+	// Vertex-shader se encarga de las posicones 3D
+	// Fragment-shader se encarga del color de cada pixel
 	program = initShaders(gl, "vertex-shader", "fragment-shader");
 	  
-	// Save the attribute and uniform locations
+	// Guarda las ubicaciones de las variables dentro de los shaders para poder
+	// pasarles datos
 	uLocations.model = gl.getUniformLocation(program, "model");
 	uLocations.view = gl.getUniformLocation(program, "view");
 	uLocations.projection = gl.getUniformLocation(program, "projection");
@@ -244,21 +248,24 @@ window.initGame = function() {
 	programInfo.attribLocations = aLocations;
 	programInfo.program = program;
 
+	// Activa este conjunto de shaders como el programa grafico
 	gl.useProgram(programInfo.program);
 	
-	// Set up viewport 
-	// gl.viewport(x, y, width, height)
+	// Set up viewport - es decir, que parte del canvas se va a usar (todo)
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	// Set up camera	
-	eye = INITIAL_POSITION;
-	target = vec3(0.0, 0.0, 0.0);
-	up =  vec3(0.0, 1.0, 0.0);
-	view = lookAt(eye,target,up);
+	eye = INITIAL_POSITION; // Donde esta el espectador
+	target = vec3(0.0, 0.0, 0.0); // Hacia donde mira
+	up =  vec3(0.0, 1.0, 0.0); // Que direccion es arriba (Y)
+	// Matriz de vista que transforma el mundo segun la camara
+	view = lookAt(eye,target,up); 
 
 	// Establecer la proyeccion perspectiva por defecto
 	projection = perspective(45.0, canvas.width/canvas.height, 0.1, 800.0 );
 
+	// Envio de las matrices de proyeccion y vista a la tarjeta grafica para que 
+	// los shaders lo usen
 	gl.uniformMatrix4fv(programInfo.uniformLocations.projection, gl.FALSE, projection);
 	gl.uniformMatrix4fv(programInfo.uniformLocations.view, gl.FALSE, view);
 	
@@ -266,7 +273,6 @@ window.initGame = function() {
 	window.addEventListener("keyup", keyReleasedHandler);
 	
 	start_hud();
-	//createNaveEnemiga();
 	generar_señales(7);
 	generar_fondo_estrellas();
 
@@ -310,30 +316,10 @@ function update(dt) {
 	calcular_rotacion(jugador, dt);
 	nuevo_eje_movimiento(jugador);
 	calcular_movimiento_jugador(jugador, dt);
-
-	handle_disparos(dt, jugador);
 	
 	update_hud();
 
 	detectar_colisiones();
-
-	for(let i=0; i < naves.length; i++){
-		let nave = naves[i];
-
-		nave.yaw_velocity = VEL_GIRAR * dt * 10
-		nave.pitch_velocity = VEL_GIRAR * dt * 10
-		nave.roll_velocity = VEL_GIRAR * dt * 10
-
-		calcular_rotacion(nave, dt);
-		nave.rot_yaw += nave.yaw;
-		nave.rot_pitch += nave.pitch;
-		nave.rot_roll += nave.roll;
-		nuevo_eje_movimiento(nave);
-		
-		// Calculo movimiento de la nave
-		//nave.velocity = add(nave.velocity, mult(dt * VEL_MOVIMIENTO/2, nave.eje_Z_rot));
-		//nave.position = add(nave.position, mult(dt, nave.velocity));
-	}
 
 	for(let i=0; i < planetas.length; i++){
 		let planeta = planetas[i];
@@ -441,7 +427,7 @@ function render(dt) {
 		uniforms.u_model = translate(estrella.position[0], estrella.position[1], estrella.position[2]);
 	}
 
-
+/*
 	// Renderizado de naves
 	for(let i=0; i < naves.length; i++){
 		let nave = naves[i];
@@ -461,13 +447,7 @@ function render(dt) {
 		uniforms.u_model = mult(uniforms.u_model, RMX);
 
 	}
-
-	for(let i=0; i < balls.length; i++){
-		let ball = balls[i];
-		let uniforms = ball.model.uniforms;
-
-		uniforms.u_model = translate(ball.position[0], ball.position[1], ball.position[2]);
-	}
+*/
 	
 	//----------------------------------------------------------------------------
 	// DRAW

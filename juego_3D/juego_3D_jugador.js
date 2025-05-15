@@ -69,57 +69,9 @@ function seleccionar_planeta() {
 	}
 }
 
-// DISPAROS
-
-var cooldown = 0;
-
-var balls = [];
-
-function spawn_disparo(position, direction, velocity) {
-	crear_objeto_y_modelo(
-		{
-			position: add(position, mult(0.05, direction)),
-			velocity: add(velocity, mult(SHOOTING_FORCE, direction)),
-			direction: direction,
-			lifetime: BALL_LIFETIME
-		},
-		{
-			programInfo: programInfo,
-			pointsArray: pointsDisp, 
-			colorsArray: colorsDisp, 
-			uniforms: {
-			  u_colorMult: [1.0, 1.0, 1.0, 1.0],
-			  u_model: translate(0,0,0),
-			},
-			primType: "triangles",
-		},
-		balls
-	);
-}
-
-
-function handle_disparos(dt, nave) {
-	cooldown -= 1;
-	for(let i=0; i < balls.length; i++){
-		let ball = balls[i]
-		ball.position = add(ball.position, mult(dt, ball.velocity));
-		balls[i].lifetime -= 1;
-		if (balls[i].lifetime <= 0) {
-			remove_model_and_object(objectsToDraw, balls, i)
-		}
-	}
-	if ((teclas_pulsadas.disparar == 1) && (cooldown <= 0)) {
-		cooldown = MAX_DISP_COOLDOWN;
-		const lateral = mult(0.05, nave.eje_X_rot);
-		spawn_disparo(add(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
-		spawn_disparo(subtract(nave.position, lateral), nave.eje_Z_rot, nave.velocity)
-	}
-}
-
 //------------------------------------------------------------------------------
 // Controles
 //------------------------------------------------------------------------------
-
 // 0 si ha sido soltada
 // 1 si esta siendo pulsada
 // 2 si se ha desabilitado la pulsación y es necesario volver a pulsar la tecla
@@ -140,10 +92,6 @@ var teclas_pulsadas = {
 	parar: 0,
 	disparar: 0,
 };
-
-/**
- * Maneja la pulsación de teclas.
- */
 function keyDownHandler(event) {
     switch(event.key) {
 		//case "ArrowUp":
@@ -210,10 +158,6 @@ function keyDownHandler(event) {
 			break;
 	}
 }
-
-/**
- * Maneja la liberación de teclas.
- */
 function keyReleasedHandler(event) {
     switch(event.key) {
 		//case "ArrowUp":
